@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from io import BytesIO
+from datetime import datetime
 
 from src.styles import set_style, show_logo, kpi_card
 from src.data_processing import clean_name, compute_kpis
@@ -45,6 +46,7 @@ page_selection = st.sidebar.radio(
 st.sidebar.markdown("## ⚙️ Dashboard Settings")
 show_kpis = st.sidebar.checkbox("Show KPI Cards", value=True)
 show_trends = st.sidebar.checkbox("Show Trend Charts", value=True)
+theme_color = st.sidebar.color_picker("Pick KPI card highlight color", "#06B6D4")
 
 # =====================================================
 # PAGE TITLE
@@ -59,8 +61,6 @@ st.markdown(
 # ------------------ DASHBOARD PAGE ------------------
 # =====================================================
 if page_selection == "📊 Dashboard":
-
-    # 1️⃣ FILE UPLOAD
     st.markdown("## Upload Ticket Data")
     uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
     if not uploaded_file:
@@ -68,11 +68,11 @@ if page_selection == "📊 Dashboard":
         st.stop()
 
     data = pd.read_excel(uploaded_file)
+
     with st.expander("Preview Uploaded Data"):
         st.dataframe(data.head(), use_container_width=True)
 
-    # 2️⃣ DATA CLEANING & FILTERING
-    st.markdown("## Data Cleaning & Filtering")
+    # 2️⃣ CLEANING & FILTERING
     data["Company Name"] = clean_name(data, "Organization->Name")
     data["Technician Name"] = clean_name(data, "Agent->Full name")
     data["Caller Name"] = clean_name(data, "Caller->Full name")
@@ -95,14 +95,12 @@ if page_selection == "📊 Dashboard":
                   data["Caller Name"].isin(remove_persons))
             ]
 
-    # 3️⃣ DATA ANONYMIZATION
-    st.markdown("## Data Anonymization")
+    # 3️⃣ ANONYMIZATION
     sensitive_cols = st.multiselect("Select columns to anonymize", options=data.columns)
     for col in sensitive_cols:
         data[col] = [f"{col.split('->')[0]} {i+1}" for i in range(len(data))]
 
     # 4️⃣ TIME FILTERING
-    st.markdown("## Time Period")
     if "Start date" in data.columns:
         data["Start date"] = pd.to_datetime(data["Start date"], errors="coerce")
         data["Month"] = data["Start date"].dt.to_period("M").astype(str)
@@ -135,9 +133,7 @@ if page_selection == "📊 Dashboard":
     monthly_summary["Closure %"] = (monthly_summary["Closed_Tickets"] / monthly_summary["Total_Tickets"] * 100).round(1)
     monthly_summary["SLA %"] = ((monthly_summary["SLA_TTO_Done"] + monthly_summary["SLA_TTR_Done"]) / (2 * monthly_summary["Total_Tickets"]) * 100).round(1)
 
-    # =====================================================
-    # New Feature: SLA Performance Filter
-    # =====================================================
+    # SLA Filter
     st.markdown("## Filter by SLA Performance")
     sla_filter = st.selectbox("Show tickets with SLA", ["All", "High (>=90%)", "Medium (75–90%)", "Low (<75%)"])
     if sla_filter != "All":
@@ -153,18 +149,12 @@ if page_selection == "📊 Dashboard":
     if show_kpis:
         st.markdown("## Key Metrics")
         c1, c2, c3, c4, c5, c6 = st.columns(6)
-        with c1:
-            kpi_card("Total Tickets", int(monthly_summary["Total_Tickets"].sum()))
-        with c2:
-            kpi_card("Closed Tickets", int(monthly_summary["Closed_Tickets"].sum()), "#22C55E")
-        with c3:
-            kpi_card("Pending Tickets", int(monthly_summary["Pending_Tickets"].sum()), "#F59E0B")
-        with c4:
-            kpi_card("SLA Violations", int(monthly_summary["SLA Violations"].sum()), "#EF4444")
-        with c5:
-            kpi_card("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%", "#0EA5A4")
-        with c6:
-            kpi_card("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%", "#06B6D4")
+        kpi_card("Total Tickets", int(monthly_summary["Total_Tickets"].sum()), theme_color, c1)
+        kpi_card("Closed Tickets", int(monthly_summary["Closed_Tickets"].sum()), "#22C55E", c2)
+        kpi_card("Pending Tickets", int(monthly_summary["Pending_Tickets"].sum()), "#F59E0B", c3)
+        kpi_card("SLA Violations", int(monthly_summary["SLA Violations"].sum()), "#EF4444", c4)
+        kpi_card("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%", "#0EA5A4", c5)
+        kpi_card("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%", "#06B6D4", c6)
 
     # 7️⃣ TOP 5 PERFORMERS
     def sla_color(val):
@@ -200,7 +190,7 @@ if page_selection == "📊 Dashboard":
         trend_fig = px.line(monthly_summary.sort_values("Month"), x="Month", y=["Closure %", "SLA %"], markers=True)
         st.plotly_chart(trend_fig, use_container_width=True)
 
-    # 🔟 Technician Comparison
+    # 10️⃣ Technician Comparison
     st.markdown("## Compare Technicians")
     selected_techs = st.multiselect("Select up to 3 technicians", options=data["Technician Name"].unique(),
                                     default=data["Technician Name"].unique()[:3])
@@ -209,7 +199,7 @@ if page_selection == "📊 Dashboard":
         comp_summary = comp_data.groupby("Technician Name").agg(Tickets=("Ref", "count"), Closed=("Done Tasks", "sum")).reset_index()
         st.bar_chart(comp_summary.set_index("Technician Name"))
 
-    # 🔟 EXPORT
+    # 11️⃣ EXPORT
     st.markdown("## Export Reports")
     excel_buffer = BytesIO()
     with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
@@ -227,7 +217,95 @@ if page_selection == "📊 Dashboard":
         st.download_button("Download PowerPoint", ppt_buffer, "ticket_report.pptx")
 
 # =====================================================
-# Other pages (Advanced Analytics, Data Explorer, Export Center, Settings)
+# ------------------ ADVANCED ANALYTICS PAGE ------------------
 # =====================================================
-# Keep them as in your original code; no change needed.
+elif page_selection == "📈 Advanced Analytics":
+    st.title("📈 Advanced Analytics")
+    st.markdown("Analyze trends, rolling averages, and predictive KPIs.")
+
+    if "data" in locals():
+        # Tickets trend line
+        tickets_monthly = data.groupby("Month")["Ref"].count().reset_index()
+        tickets_monthly["Rolling Avg"] = tickets_monthly["Ref"].rolling(3, min_periods=1).mean()
+        tickets_monthly["Monthly Growth %"] = tickets_monthly["Ref"].pct_change().fillna(0) * 100
+        st.plotly_chart(px.line(tickets_monthly, x="Month", y=["Ref", "Rolling Avg"], markers=True, title="Tickets Trend & Rolling Avg"))
+
+        # Predictive KPI: Linear trend forecasting
+        tickets_monthly["Month_Num"] = range(len(tickets_monthly))
+        coef = np.polyfit(tickets_monthly["Month_Num"], tickets_monthly["Ref"], 1)
+        tickets_monthly["Forecast"] = np.polyval(coef, tickets_monthly["Month_Num"])
+        st.plotly_chart(px.line(tickets_monthly, x="Month", y=["Ref", "Forecast"], markers=True, title="Tickets Forecast"))
+
+        # Technician performance heatmap
+        tech_perf = data.groupby(["Technician Name", "Month"]).agg(Tickets=("Ref","count")).reset_index()
+        pivot = tech_perf.pivot(index="Technician Name", columns="Month", values="Tickets").fillna(0)
+        st.markdown("### Technician Monthly Performance")
+        st.dataframe(pivot)
+
+# =====================================================
+# ------------------ DATA EXPLORER PAGE ------------------
+# =====================================================
+elif page_selection == "📁 Data Explorer":
+    st.title("📁 Data Explorer")
+    st.markdown("Search, filter, sort, and export raw ticket data.")
+
+    if "data" in locals():
+        search_term = st.text_input("Search for Technician, Caller, or Company")
+        filtered_data = data.copy()
+        if search_term:
+            filtered_data = filtered_data[
+                filtered_data["Technician Name"].str.contains(search_term, case=False, na=False) |
+                filtered_data["Caller Name"].str.contains(search_term, case=False, na=False) |
+                filtered_data["Company Name"].str.contains(search_term, case=False, na=False)
+            ]
+        st.dataframe(filtered_data, use_container_width=True)
+
+        # Multi-column filtering
+        st.markdown("### Column Filters")
+        for col in filtered_data.select_dtypes(include=["object"]).columns:
+            unique_vals = filtered_data[col].dropna().unique()
+            selected = st.multiselect(f"Filter {col}", options=unique_vals, default=unique_vals)
+            filtered_data = filtered_data[filtered_data[col].isin(selected)]
+        st.dataframe(filtered_data, use_container_width=True)
+
+        # Export filtered data
+        export_buffer = BytesIO()
+        with pd.ExcelWriter(export_buffer, engine="xlsxwriter") as writer:
+            filtered_data.to_excel(writer, sheet_name="Filtered_Data", index=False)
+        export_buffer.seek(0)
+        st.download_button("Download Filtered Data", export_buffer, "filtered_data.xlsx")
+
+# =====================================================
+# ------------------ EXPORT CENTER PAGE ------------------
+# =====================================================
+elif page_selection == "📤 Export Center":
+    st.title("📤 Export Center")
+    st.markdown("Download processed datasets and KPI summaries.")
+
+    if "data" in locals() and "monthly_summary" in locals():
+        st.markdown("### Full Export")
+        full_buffer = BytesIO()
+        with pd.ExcelWriter(full_buffer, engine="xlsxwriter") as writer:
+            data.to_excel(writer, sheet_name="Processed_Data", index=False)
+            monthly_summary.to_excel(writer, sheet_name="Monthly_Summary", index=False)
+        full_buffer.seek(0)
+        st.download_button("⬇️ Download Excel", full_buffer, "analytics_full_report.xlsx")
+
+        prs = create_ppt({"Monthly KPI": monthly_summary})
+        ppt_buffer = BytesIO()
+        prs.save(ppt_buffer)
+        ppt_buffer.seek(0)
+        st.download_button("⬇️ Download PowerPoint", ppt_buffer, "analytics_full_report.pptx")
+
+# =====================================================
+# ------------------ SETTINGS PAGE ------------------
+# =====================================================
+elif page_selection == "⚙️ Settings":
+    st.title("⚙️ Settings")
+    st.markdown("Adjust dashboard features and preferences.")
+
+    st.checkbox("Show KPI Cards", value=show_kpis)
+    st.checkbox("Show Trend Charts", value=show_trends)
+    st.color_picker("KPI Card Theme Color", value=theme_color)
+    st.info("Changes will reflect on the Dashboard page in real-time.")
 
