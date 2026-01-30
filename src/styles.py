@@ -4,16 +4,16 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Cyan-Green Power BI Style Theme"""
+    """Apply a theme matching the logo (Cyan → Teal → Green gradient)"""
     st.markdown(
         """
         <style>
 
         /* ===============================
-           GLOBAL BACKGROUND (CYAN → GREEN)
+           GLOBAL BACKGROUND (CYAN → TEAL → GREEN)
         ===============================*/
         .stApp {
-            background: linear-gradient(135deg, #00C9A7, #2EE59D);
+            background: linear-gradient(135deg, #00C9A7, #14B8A6, #22C55E);
             color: #0F172A;
             font-family: 'Segoe UI', sans-serif;
         }
@@ -27,7 +27,7 @@ def set_style():
         }
 
         h1 {
-            border-bottom: 3px solid #0EA5A4;
+            border-bottom: 3px solid #06B6D4;
             padding-bottom: 8px;
             margin-bottom: 20px;
         }
@@ -44,24 +44,30 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {
-            background-color: #ECFEFF;
-            border-radius: 10px;
+            background-color: #E0FDF4;
+            border-radius: 12px;
             padding: 18px;
             text-align: center;
             box-shadow: 0 6px 14px rgba(0,0,0,0.15);
             border-left: 6px solid #14B8A6;
             margin-bottom: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
         }
 
         .kpi-card h4 {
-            font-size: 13px;
+            font-size: 14px;
             color: #047857;
             margin-bottom: 6px;
         }
 
         .kpi-card h2 {
-            font-size: 30px;
-            color: #0F766E;
+            font-size: 32px;
+            color: #065F46;
             margin: 0;
         }
 
@@ -82,7 +88,7 @@ def set_style():
         }
 
         .stDataFrame th {
-            background-color: #0EA5A4;
+            background-color: #06B6D4;
             color: white;
             padding: 10px;
             text-align: left;
@@ -104,11 +110,11 @@ def set_style():
         }
 
         /* ===============================
-           SIDEBAR (SLICERS)
+           SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #ECFEFF;
-            border-right: 2px solid #5EEAD4;
+            background-color: #E0FDF4;
+            border-right: 2px solid #14B8A6;
         }
 
         /* ===============================
@@ -170,15 +176,16 @@ def show_logo():
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
     try:
         img = Image.open(logo_path)
-        st.image(img, width=150)
+        st.image(img, width=160)
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
 def kpi_card(title, value, color="#14B8A6"):
-    """Cyan-Green KPI card"""
+    """Cyan-Teal-Green KPI card"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
