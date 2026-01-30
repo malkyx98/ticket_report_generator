@@ -4,7 +4,7 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Analytics BI – Dark Blue, White & Orange Theme"""
+    """Apply Analytics BI – White Background, Orange Boxes, Dark Blue Text Theme"""
     st.markdown(
         """
         <style>
@@ -12,8 +12,8 @@ def set_style():
            GLOBAL APP BACKGROUND
         ===============================*/
         .stApp {
-            background: linear-gradient(135deg, #0A1F44, #1C3B70);
-            color: #FFFFFF;
+            background-color: #FFFFFF;
+            color: #0A1F44;  /* Dark blue text */
             font-family: 'Segoe UI', sans-serif;
         }
 
@@ -21,7 +21,7 @@ def set_style():
            HEADERS
         ===============================*/
         h1, h2, h3, h4 {
-            color: #FFA500;  /* Orange headers */
+            color: #0A1F44;  /* Dark blue headers */
             font-weight: 600;
         }
 
@@ -31,7 +31,7 @@ def set_style():
            TEXT
         ===============================*/
         .stMarkdown p {
-            color: #E0E0E0;
+            color: #0A1F44;  /* Dark blue text */
             font-size: 14px;
         }
 
@@ -39,24 +39,24 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {
-            background-color: #1C3B70;
+            background-color: #FFA500;  /* Orange boxes */
             border-radius: 12px;
             padding: 18px;
             text-align: center;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-            border-left: 6px solid #FFA500;  /* Orange accent */
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+            border-left: 6px solid #FF8C00;  /* Darker orange accent */
             margin-bottom: 16px;
         }
 
         .kpi-card h4 {
             font-size: 13px;
-            color: #FFD580;
+            color: #0A1F44;  /* Dark blue text */
             margin-bottom: 6px;
         }
 
         .kpi-card h2 {
             font-size: 30px;
-            color: #FFFFFF;
+            color: #0A1F44;  /* Dark blue text */
             margin: 0;
         }
 
@@ -64,61 +64,61 @@ def set_style():
            DATAFRAMES
         ===============================*/
         .stDataFrame {
-            background-color: #0A1F44;
+            background-color: #FFA500;  /* Orange boxes */
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .stDataFrame th {
-            background-color: #1C3B70;
-            color: #FFA500;
+            background-color: #FF8C00;
+            color: #FFFFFF;
             padding: 10px;
             font-weight: 600;
         }
 
         .stDataFrame td {
             padding: 8px;
-            border-bottom: 1px solid #333;
-            color: #FFFFFF;
+            border-bottom: 1px solid #FFB84D;
+            color: #0A1F44;  /* Dark blue text */
         }
 
         .stDataFrame tr:nth-child(even) {
-            background-color: #162D57;
+            background-color: #FFD580;  /* Light orange rows */
         }
 
         .stDataFrame tr:hover {
-            background-color: #27468B;
+            background-color: #FFC04D;
         }
 
         /* ===============================
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #0A1F44, #1C3B70);
+            background-color: #FFA500;  /* Orange sidebar */
             padding-top: 1.2rem;
-            border-right: 3px solid #FFA500;
+            border-right: 3px solid #FF8C00;
         }
 
         section[data-testid="stSidebar"] * {
-            color: #FFFFFF !important;
+            color: #0A1F44 !important;  /* Dark blue text */
             font-size: 14px;
         }
 
         section[data-testid="stSidebar"] input,
         section[data-testid="stSidebar"] select {
-            background-color: #1C3B70 !important;
-            color: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #0A1F44 !important;
             border-radius: 6px !important;
-            border: 1px solid #FFA500 !important;
+            border: 1px solid #0A1F44 !important;
         }
 
         /* ===============================
            INPUTS (MAIN AREA)
         ===============================*/
         input, textarea, select {
-            background-color: #27468B !important;
-            color: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #0A1F44 !important;
             border-radius: 6px !important;
             border: 1px solid #FFA500 !important;
         }
@@ -127,18 +127,18 @@ def set_style():
            BUTTONS
         ===============================*/
         button {
-            background: linear-gradient(135deg, #1C3B70, #0A1F44) !important;
-            color: #FFA500 !important;
+            background-color: #FFA500 !important;
+            color: #0A1F44 !important;
             border-radius: 8px !important;
             padding: 0.55em 1.4em !important;
             font-weight: 600 !important;
-            border: 1px solid #FFA500 !important;
+            border: none !important;
             transition: all 0.2s ease-in-out;
         }
 
         button:hover {
-            background: linear-gradient(135deg, #27468B, #1C3B70) !important;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+            background-color: #FF8C00 !important;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
             transform: translateY(-1px);
         }
 
@@ -146,7 +146,7 @@ def set_style():
            DOWNLOAD BUTTONS
         ===============================*/
         div.stDownloadButton > button {
-            background: linear-gradient(135deg, #FFA500, #FFB84D) !important;
+            background-color: #FFA500 !important;
             color: #0A1F44 !important;
         }
 
