@@ -26,7 +26,7 @@ show_logo()
 # -------------------------------
 # PAGE TITLE
 # -------------------------------
-st.title("Ticket Report Generator")
+st.title("Analytics BI")
 st.markdown(
     "Generate **board-ready ticket KPI reports** with filtering, anonymization, "
     "monthly comparison, and export to **Excel & PowerPoint**."
