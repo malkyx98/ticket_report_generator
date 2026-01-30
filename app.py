@@ -12,7 +12,7 @@ import numpy as np
 # PAGE CONFIG
 # -------------------------------
 st.set_page_config(
-    page_title="Ticket Report Generator",
+    page_title="Analytics BI",
     layout="wide",
     initial_sidebar_state="expanded"
 )
