@@ -12,7 +12,7 @@ import numpy as np
 # PAGE CONFIG
 # -------------------------------
 st.set_page_config(
-    page_title="Ticket Report Generator",
+    page_title="Analytics BI",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -21,9 +21,8 @@ st.set_page_config(
 # SIMPLE LOGIN SYSTEM
 # -------------------------------
 USERS = {
-    "admin": "1234",
-    "user1": "abcd",
-    "user2": "pass"
+    "admin@test.com": "1234",
+    "malki.p@sits.com": "IklaM@9814",
 }
 
 # Initialize session_state
@@ -65,7 +64,7 @@ show_logo()
 # -------------------------------
 # PAGE TITLE & LOGOUT
 # -------------------------------
-st.title("Ticket Report Generator")
+st.title("Analytics BI")
 st.markdown(f"Welcome, **{st.session_state.username}**! Generate board-ready ticket KPI reports.")
 
 # Logout button
