@@ -4,13 +4,13 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Cyan-Green Power BI Style Theme"""
+    """Apply Analytics BI – Cyan Green Enterprise Theme"""
     st.markdown(
         """
         <style>
 
         /* ===============================
-           GLOBAL BACKGROUND (CYAN → GREEN)
+           GLOBAL APP BACKGROUND
         ===============================*/
         .stApp {
             background: linear-gradient(135deg, #00C9A7, #2EE59D);
@@ -27,13 +27,12 @@ def set_style():
         }
 
         h1 {
-            /* Removed border-bottom line */
             padding-bottom: 8px;
             margin-bottom: 20px;
         }
 
         /* ===============================
-           DESCRIPTION TEXT
+           TEXT
         ===============================*/
         .stMarkdown p {
             color: #064E3B;
@@ -45,7 +44,7 @@ def set_style():
         ===============================*/
         .kpi-card {
             background-color: #ECFEFF;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 18px;
             text-align: center;
             box-shadow: 0 6px 14px rgba(0,0,0,0.15);
@@ -70,22 +69,15 @@ def set_style():
         ===============================*/
         .stDataFrame {
             background-color: #ECFEFF;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .stDataFrame table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 13px;
         }
 
         .stDataFrame th {
             background-color: #0EA5A4;
             color: white;
             padding: 10px;
-            text-align: left;
             font-weight: 600;
         }
 
@@ -104,15 +96,29 @@ def set_style():
         }
 
         /* ===============================
-           SIDEBAR (SLICERS)
+           SIDEBAR – FIXED VISIBILITY
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #ECFEFF;
-            border-right: 2px solid #5EEAD4;
+            background: linear-gradient(180deg, #0F766E, #115E59);
+            padding-top: 1.2rem;
+            border-right: 3px solid #5EEAD4;
+        }
+
+        section[data-testid="stSidebar"] * {
+            color: #ECFEFF !important;
+            font-size: 14px;
+        }
+
+        section[data-testid="stSidebar"] input,
+        section[data-testid="stSidebar"] select {
+            background-color: #ECFEFF !important;
+            color: #064E3B !important;
+            border-radius: 6px !important;
+            border: 1px solid #5EEAD4 !important;
         }
 
         /* ===============================
-           INPUTS
+           INPUTS (MAIN AREA)
         ===============================*/
         input, textarea, select {
             background-color: #F0FDFA !important;
@@ -147,10 +153,6 @@ def set_style():
             background: linear-gradient(135deg, #16A34A, #22C55E) !important;
         }
 
-        div.stDownloadButton > button:hover {
-            background: linear-gradient(135deg, #15803D, #16A34A) !important;
-        }
-
         /* ===============================
            PAGE PADDING
         ===============================*/
@@ -165,8 +167,9 @@ def set_style():
         unsafe_allow_html=True
     )
 
+
 def show_logo():
-    """Display a logo from assets folder"""
+    """Display logo from assets folder"""
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
     try:
         img = Image.open(logo_path)
@@ -174,12 +177,16 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
+
 def kpi_card(title, value, color="#14B8A6"):
-    """Cyan-Green KPI card"""
-    st.markdown(f"""
+    """Analytics BI KPI Card"""
+    st.markdown(
+        f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
             <h2>{value}</h2>
         </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
