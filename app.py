@@ -18,10 +18,15 @@ st.set_page_config(
 )
 
 # -------------------------------
-# CUSTOM STYLE
+# CUSTOM STYLE & LOGO
 # -------------------------------
 set_style()
 show_logo()
+
+# -------------------------------
+# DARK MODE TOGGLE (optional)
+# -------------------------------
+dark_mode = st.sidebar.checkbox("Dark Mode (experimental)", value=False)
 
 # -------------------------------
 # PAGE TITLE
@@ -115,15 +120,15 @@ if uploaded_file:
     monthly_summary = (
         data.groupby('Month')
         .agg({
-            'Ref': 'count',                 # Total Tickets
-            'Done Tasks': 'sum',            # Closed Tickets
-            'Pending Tasks': 'sum',         # Pending Tickets
-            'SLA TTO Done': 'sum',          # SLA TTO Met
-            'SLA TTR Done': 'sum',          # SLA TTR Met
-            'Duration (days)': 'mean'       # Avg resolution
+            'Ref': 'count',
+            'Done Tasks': 'sum',
+            'Pending Tasks': 'sum',
+            'SLA TTO Done': 'sum',
+            'SLA TTR Done': 'sum',
+            'Duration (days)': 'mean'
         })
         .rename(columns={
-            'Ref': 'Total Tickets', 
+            'Ref': 'Total Tickets',
             'Done Tasks': 'Closed Tickets',
             'Pending Tasks': 'Pending Tickets',
             'Duration (days)': 'Avg Resolution Days'
@@ -131,17 +136,13 @@ if uploaded_file:
         .reset_index()
     )
 
-    # =====================================================
-    # SLA Violations Calculation
-    # =====================================================
+    # SLA Violations
     monthly_summary['SLA TTO Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTO Done']
     monthly_summary['SLA TTR Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTR Done']
     monthly_summary['SLA Violations'] = ((monthly_summary['SLA TTO Violations'] + monthly_summary['SLA TTR Violations']) / 2).round(0)
 
-    # Closure % = Closed / Total
+    # Percentages
     monthly_summary['Closure %'] = (monthly_summary['Closed Tickets'] / monthly_summary['Total Tickets'] * 100).round(1)
-
-    # SLA % = compliance % based on done
     monthly_summary['SLA %'] = ((monthly_summary['SLA TTO Done'] + monthly_summary['SLA TTR Done']) 
                                 / (2 * monthly_summary['Total Tickets']) * 100).round(1)
     monthly_summary['Avg Resolution Days'] = monthly_summary['Avg Resolution Days'].fillna(0)
@@ -211,11 +212,11 @@ if uploaded_file:
     # 8️⃣ MONTHLY KPI SUMMARY TABLE
     # =====================================================
     st.markdown("## Monthly KPI Summary")
-    st.dataframe(monthly_summary[
-        ['Month','Total Tickets','Closed Tickets','Pending Tickets',
-         'SLA Violations','SLA TTO Violations','SLA TTR Violations',
-         'Closure %','SLA %','Avg Resolution Days']
-    ], use_container_width=True)
+    st.dataframe(monthly_summary[[
+        'Month','Total Tickets','Closed Tickets','Pending Tickets',
+        'SLA Violations','SLA TTO Violations','SLA TTR Violations',
+        'Closure %','SLA %','Avg Resolution Days'
+    ]], use_container_width=True)
 
     # =====================================================
     # 9️⃣ TREND CHART
@@ -251,3 +252,4 @@ if uploaded_file:
         prs.save(ppt_output)
         ppt_output.seek(0)
         st.download_button("Download PowerPoint", ppt_output, file_name="ticket_report.pptx")
+
