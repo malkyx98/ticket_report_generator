@@ -27,20 +27,17 @@ show_logo()
 # -------------------------------
 # SESSION STATE DEFAULTS
 # -------------------------------
-if "data" not in st.session_state:
-    st.session_state.data = pd.DataFrame()
-if "monthly_summary" not in st.session_state:
-    st.session_state.monthly_summary = pd.DataFrame()
-if "tech_summary" not in st.session_state:
-    st.session_state.tech_summary = pd.DataFrame()
-if "caller_summary" not in st.session_state:
-    st.session_state.caller_summary = pd.DataFrame()
-if "show_kpis" not in st.session_state:
-    st.session_state.show_kpis = True
-if "show_trends" not in st.session_state:
-    st.session_state.show_trends = True
-if "anonymize_data" not in st.session_state:
-    st.session_state.anonymize_data = False
+for key, default in {
+    "data": pd.DataFrame(),
+    "monthly_summary": pd.DataFrame(),
+    "tech_summary": pd.DataFrame(),
+    "caller_summary": pd.DataFrame(),
+    "show_kpis": True,
+    "show_trends": True,
+    "anonymize_data": False
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 # =====================================================
 # SIDEBAR
@@ -52,11 +49,12 @@ page = st.sidebar.radio(
 )
 
 # -------------------------------
-# LOGOUT SIMULATION (OPTIONAL)
+# RESET SESSION SAFELY
 # -------------------------------
 if st.sidebar.button("Reset Session"):
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
+    keys_to_reset = list(st.session_state.keys())
+    for key in keys_to_reset:
+        st.session_state[key] = None
     st.experimental_rerun()
 
 # =====================================================
@@ -76,7 +74,7 @@ def upload_file():
         st.stop()
 
 # =====================================================
-# UTILITY FUNCTIONS
+# DATA CLEANING & ANONYMIZATION
 # =====================================================
 def clean_data(df):
     df['Company Name'] = clean_name(df, 'Organization->Name') if 'Organization->Name' in df.columns else ""
@@ -89,6 +87,9 @@ def anonymize(df, columns):
         df[col] = [f"{col.split('->')[0]} {i+1}" for i in range(len(df))]
     return df
 
+# =====================================================
+# KPI & SUMMARY FUNCTIONS
+# =====================================================
 def calculate_monthly_summary(df):
     if 'Start date' in df.columns:
         df['Start date'] = pd.to_datetime(df['Start date'], errors='coerce')
@@ -148,7 +149,7 @@ def style_sla(df, column='SLA %'):
 # =====================================================
 if page == "Dashboard":
     st.header("📊 Dashboard Overview")
-    data = upload_file()
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
     data = clean_data(data)
 
     # Exclude filters
@@ -175,14 +176,15 @@ if page == "Dashboard":
     st.session_state.monthly_summary = monthly_summary
 
     # KPI CARDS
-    st.markdown("### Key Metrics")
-    c1,c2,c3,c4,c5,c6 = st.columns(6)
-    c1.metric("Total Tickets", int(monthly_summary['Total Tickets'].sum()))
-    c2.metric("Closed Tickets", int(monthly_summary['Closed Tickets'].sum()))
-    c3.metric("Pending Tickets", int(monthly_summary['Pending Tickets'].sum()))
-    c4.metric("SLA Violations", int(monthly_summary['SLA Violations'].sum()))
-    c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
-    c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
+    if st.session_state.show_kpis:
+        st.markdown("### Key Metrics")
+        c1,c2,c3,c4,c5,c6 = st.columns(6)
+        c1.metric("Total Tickets", int(monthly_summary['Total Tickets'].sum()))
+        c2.metric("Closed Tickets", int(monthly_summary['Closed Tickets'].sum()))
+        c3.metric("Pending Tickets", int(monthly_summary['Pending Tickets'].sum()))
+        c4.metric("SLA Violations", int(monthly_summary['SLA Violations'].sum()))
+        c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
+        c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
 
     # Top Performers
     if 'Technician Name' in data.columns:
@@ -202,24 +204,19 @@ if page == "Dashboard":
         st.session_state.caller_summary = caller_summary
 
     # Monthly Trend
-    st.subheader("Monthly KPI Trend")
-    fig = px.line(monthly_summary.sort_values('Month'), x='Month', y=['Closure %','SLA %'], markers=True)
-    st.plotly_chart(fig, use_container_width=True)
+    if st.session_state.show_trends:
+        st.subheader("Monthly KPI Trend")
+        fig = px.line(monthly_summary.sort_values('Month'), x='Month', y=['Closure %','SLA %'], markers=True)
+        st.plotly_chart(fig, use_container_width=True)
 
 # =====================================================
 # ADVANCED ANALYTICS PAGE
 # =====================================================
 elif page == "Advanced Analytics":
     st.header("🔍 Advanced Analytics")
-    if st.session_state.data.empty:
-        data = upload_file()
-        data = clean_data(data)
-        data, monthly_summary = calculate_monthly_summary(data)
-        st.session_state.data = data
-        st.session_state.monthly_summary = monthly_summary
-    else:
-        data = st.session_state.data
-        monthly_summary = st.session_state.monthly_summary
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    data = clean_data(data)
+    data, monthly_summary = calculate_monthly_summary(data)
 
     st.subheader("SLA vs Resolution Days Scatter")
     if 'Duration (days)' in data.columns and 'SLA TTO Done' in data.columns:
@@ -232,7 +229,8 @@ elif page == "Advanced Analytics":
     st.subheader("Technician SLA Heatmap")
     if 'Technician Name' in data.columns and 'Month' in data.columns:
         pivot = data.pivot_table(index='Technician Name', columns='Month', values='SLA TTO Done', aggfunc='sum', fill_value=0)
-        fig_heat = ff.create_annotated_heatmap(z=pivot.values, x=list(pivot.columns), y=list(pivot.index), colorscale='Viridis', showscale=True)
+        fig_heat = ff.create_annotated_heatmap(z=pivot.values, x=list(pivot.columns), y=list(pivot.index),
+                                               colorscale='Viridis', showscale=True)
         st.plotly_chart(fig_heat, use_container_width=True)
 
 # =====================================================
@@ -240,13 +238,9 @@ elif page == "Advanced Analytics":
 # =====================================================
 elif page == "Data Explorer":
     st.header("📂 Data Explorer")
-    if st.session_state.data.empty:
-        data = upload_file()
-        data = clean_data(data)
-        data, _ = calculate_monthly_summary(data)
-        st.session_state.data = data
-    else:
-        data = st.session_state.data
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    data = clean_data(data)
+    data, _ = calculate_monthly_summary(data)
 
     search_term = st.text_input("Search Technician, Caller, or Company")
     filtered_data = data[
@@ -267,11 +261,7 @@ elif page == "Data Explorer":
 # =====================================================
 elif page == "Export Center":
     st.header("📤 Export Center")
-    if st.session_state.data.empty:
-        data = upload_file()
-    else:
-        data = st.session_state.data
-
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
     monthly_summary = st.session_state.monthly_summary
     tech_summary = st.session_state.tech_summary
     caller_summary = st.session_state.caller_summary
@@ -303,4 +293,3 @@ elif page == "Settings":
     st.session_state.show_kpis = st.checkbox("Show KPI Cards", value=st.session_state.show_kpis)
     st.session_state.show_trends = st.checkbox("Show Trend Charts", value=st.session_state.show_trends)
     st.session_state.anonymize_data = st.checkbox("Enable Data Anonymization", value=st.session_state.anonymize_data)
-
