@@ -34,7 +34,7 @@ if "login_attempted" not in st.session_state:
     st.session_state.login_attempted = False
 
 def login_ui():
-    st.title("Login 🔒")
+    st.title("Login ")
     username_input = st.text_input("Username", key="username_input")
     password_input = st.text_input("Password", type="password", key="password_input")
     login_button = st.button("Login")
@@ -63,7 +63,7 @@ show_logo()
 st.sidebar.title("Navigation")
 page = st.sidebar.radio(
     "Go to",
-    ["📊 Dashboard", "📈 Advanced Analytics", "📁 Data Explorer", "📤 Export Center", "⚙️ Settings"]
+    ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
 )
 
 # -------------------------------
@@ -104,8 +104,8 @@ def upload_file():
 # ============================
 # DASHBOARD PAGE
 # ============================
-if page == "📊 Dashboard":
-    st.title("📊 Dashboard")
+if page == "Dashboard":
+    st.title("Dashboard")
     st.markdown("Board-ready KPI reports with filtering, anonymization, trend analysis, and exports.")
     data = upload_file()
 
@@ -246,8 +246,8 @@ if page == "📊 Dashboard":
 # ============================
 # ADVANCED ANALYTICS PAGE
 # ============================
-elif page == "📈 Advanced Analytics":
-    st.title("📈 Advanced Analytics")
+elif page == "Advanced Analytics":
+    st.title("Advanced Analytics")
     data = upload_file()
     st.markdown("### Heatmap of Technician SLA")
     if 'Technician Name' in data.columns:
@@ -262,8 +262,8 @@ elif page == "📈 Advanced Analytics":
 # ============================
 # DATA EXPLORER PAGE
 # ============================
-elif page == "📁 Data Explorer":
-    st.title("📁 Data Explorer")
+elif page == "Data Explorer":
+    st.title("Data Explorer")
     data = upload_file()
     search_term = st.text_input("Search Technician, Caller, or Company")
     filtered_data = data[
@@ -281,8 +281,8 @@ elif page == "📁 Data Explorer":
 # ============================
 # EXPORT CENTER PAGE
 # ============================
-elif page == "📤 Export Center":
-    st.title("📤 Export Center")
+elif page == "Export Center":
+    st.title("Export Center")
     data = upload_file()
     data = compute_kpis(data)
     monthly_summary = data.groupby('Month').agg({'Ref':'count','Done Tasks':'sum'}).rename(columns={'Ref':'Total Tickets','Done Tasks':'Closed Tickets'}).reset_index()
