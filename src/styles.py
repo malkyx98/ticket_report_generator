@@ -4,7 +4,7 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Analytics BI – White Background, Orange Boxes, Dark Blue Text Theme"""
+    """Apply Analytics BI – White Background, Light Orange Boxes, Dark Blue Text Theme"""
     st.markdown(
         """
         <style>
@@ -39,12 +39,12 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {
-            background-color: #FFA500;  /* Orange boxes */
+            background-color: #FFB84D;  /* Light orange boxes */
             border-radius: 12px;
             padding: 18px;
             text-align: center;
             box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-            border-left: 6px solid #FF8C00;  /* Darker orange accent */
+            border-left: 6px solid #FF9C33;  /* Darker orange accent */
             margin-bottom: 16px;
         }
 
@@ -64,14 +64,14 @@ def set_style():
            DATAFRAMES
         ===============================*/
         .stDataFrame {
-            background-color: #FFA500;  /* Orange boxes */
+            background-color: #FFB84D;  /* Light orange boxes */
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .stDataFrame th {
-            background-color: #FF8C00;
+            background-color: #FF9C33;
             color: #FFFFFF;
             padding: 10px;
             font-weight: 600;
@@ -79,25 +79,25 @@ def set_style():
 
         .stDataFrame td {
             padding: 8px;
-            border-bottom: 1px solid #FFB84D;
+            border-bottom: 1px solid #FFD580;
             color: #0A1F44;  /* Dark blue text */
         }
 
         .stDataFrame tr:nth-child(even) {
-            background-color: #FFD580;  /* Light orange rows */
+            background-color: #FFD580;  /* Lighter orange rows */
         }
 
         .stDataFrame tr:hover {
-            background-color: #FFC04D;
+            background-color: #FFC766;
         }
 
         /* ===============================
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #FFA500;  /* Orange sidebar */
+            background-color: #FFB84D;  /* Light orange sidebar */
             padding-top: 1.2rem;
-            border-right: 3px solid #FF8C00;
+            border-right: 3px solid #FF9C33;
         }
 
         section[data-testid="stSidebar"] * {
@@ -120,14 +120,14 @@ def set_style():
             background-color: #FFFFFF !important;
             color: #0A1F44 !important;
             border-radius: 6px !important;
-            border: 1px solid #FFA500 !important;
+            border: 1px solid #FFB84D !important;
         }
 
         /* ===============================
            BUTTONS
         ===============================*/
         button {
-            background-color: #FFA500 !important;
+            background-color: #FFB84D !important;
             color: #0A1F44 !important;
             border-radius: 8px !important;
             padding: 0.55em 1.4em !important;
@@ -137,7 +137,7 @@ def set_style():
         }
 
         button:hover {
-            background-color: #FF8C00 !important;
+            background-color: #FF9C33 !important;
             box-shadow: 0 6px 16px rgba(0,0,0,0.25);
             transform: translateY(-1px);
         }
@@ -146,7 +146,7 @@ def set_style():
            DOWNLOAD BUTTONS
         ===============================*/
         div.stDownloadButton > button {
-            background-color: #FFA500 !important;
+            background-color: #FFB84D !important;
             color: #0A1F44 !important;
         }
 
@@ -174,7 +174,7 @@ def show_logo():
         st.warning("Logo file not found in assets/logo.png")
 
 
-def kpi_card(title, value, color="#FFA500"):
+def kpi_card(title, value, color="#FFB84D"):
     """Analytics BI KPI Card"""
     st.markdown(
         f"""
