@@ -9,6 +9,7 @@ from src.data_processing import clean_name, compute_kpis
 from src.ppt_export import create_ppt
 import plotly.express as px
 import plotly.figure_factory as ff
+import os
 
 # -----------------------------
 # PAGE CONFIG
@@ -40,10 +41,14 @@ for key, val in defaults.items():
         st.session_state[key] = val
 
 # -----------------------------
-# LOAD LOGO
+# LOAD LOGO SAFELY
 # -----------------------------
-# Replace 'logo.png' with your actual logo path
-logo = Image.open("logo.png")
+logo_path = "logo.png"
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+else:
+    st.warning("Logo file not found! Using placeholder logo.")
+    logo = Image.new("RGB", (70, 70), color=(200, 200, 200))
 
 # -----------------------------
 # TOP NAVBAR
@@ -174,4 +179,3 @@ elif page == "Export Center":
 elif page == "Settings":
     st.markdown('<h1 style="color:#0B5394;">⚙️ Settings</h1>', unsafe_allow_html=True)
     st.markdown("Settings content goes here...", unsafe_allow_html=True)
-
