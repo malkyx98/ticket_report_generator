@@ -12,7 +12,7 @@ import plotly.figure_factory as ff
 # -------------------------------
 # PAGE CONFIG & STYLE
 # -------------------------------
-st.set_page_config(page_title="Alayticx BI", layout="wide")
+st.set_page_config(page_title="Analytics BI", layout="wide")
 set_style()
 show_logo()
 
