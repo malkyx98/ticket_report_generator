@@ -3,7 +3,7 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply White Background Theme with Multiple Accent Colors"""
+    """Apply White Background Theme (all previous dark backgrounds changed to white)"""
     st.markdown(
         """
         <style>
@@ -11,7 +11,7 @@ def set_style():
            GLOBAL BACKGROUND
         ===============================*/
         .stApp {
-            background-color: #FFFFFF; /* white background */
+            background-color: #FFFFFF; /* white background instead of black */
             color: #0B0F14; /* dark text for contrast */
             font-family: 'Courier New', monospace;
         }
@@ -34,7 +34,7 @@ def set_style():
            TEXT / PARAGRAPHS
         ===============================*/
         .stMarkdown p {
-            color: #333333; /* dark grey for readability */
+            color: #333333;
             font-size: 14px;
         }
 
@@ -42,11 +42,11 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {
-            background: #F0F4F8; /* light glass effect */
+            background: #FFFFFF; /* white background instead of dark glass */
             border-radius: 10px;
             padding: 18px;
             text-align: center;
-            border-left: 4px solid #00FF9C; /* default green accent */
+            border-left: 4px solid #00FF9C;
             margin-bottom: 16px;
             box-shadow: 0 0 12px rgba(0,0,0,0.1);
             transition: transform 0.2s ease-in-out;
@@ -57,14 +57,14 @@ def set_style():
         }
         .kpi-card h4 {
             font-size: 12px;
-            color: #FFB347; /* orange accent */
+            color: #FFB347;
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .kpi-card h2 {
             font-size: 30px;
-            color: #FFD700; /* yellow accent */
+            color: #FFD700;
             margin: 0;
             text-shadow: 0 0 5px rgba(255,215,0,0.4);
         }
@@ -73,7 +73,7 @@ def set_style():
            DATAFRAMES
         ===============================*/
         .stDataFrame {
-            background-color: #FFFFFF; /* white */
+            background-color: #FFFFFF; /* white background */
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 0 8px rgba(0,0,0,0.05);
@@ -85,7 +85,7 @@ def set_style():
             color: #0B0F14;
         }
         .stDataFrame th {
-            background-color: #00C8FF; /* blue accent */
+            background-color: #00C8FF;
             color: #FFFFFF;
             padding: 10px;
             font-weight: 700;
@@ -105,7 +105,7 @@ def set_style():
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #F9FAFB;
+            background-color: #FFFFFF; /* white sidebar instead of black */
             border-right: 1px solid #00FF9C;
         }
 
@@ -169,6 +169,5 @@ def kpi_card(title, value, color="#00FF9C"):
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
-
 
 
