@@ -4,7 +4,7 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Dark Hacker / Cyber Security Theme"""
+    """Apply Dark Hacker / Cyber Security Theme with multiple accent colors"""
     st.markdown(
         """
         <style>
@@ -27,7 +27,7 @@ def set_style():
         }
 
         h1 {
-            border-bottom: 2px solid #00FF9C;
+            border-bottom: 2px solid #00FF9C; /* green */
             padding-bottom: 6px;
             margin-bottom: 20px;
         }
@@ -48,7 +48,7 @@ def set_style():
             border-radius: 10px;
             padding: 18px;
             text-align: center;
-            border-left: 4px solid #00FF9C;
+            border-left: 4px solid #00FF9C; /* default green accent */
             margin-bottom: 16px;
             box-shadow: 0 0 18px rgba(0,255,156,0.25);
             transition: transform 0.2s ease-in-out;
@@ -61,7 +61,7 @@ def set_style():
 
         .kpi-card h4 {
             font-size: 12px;
-            color: #7EE787;
+            color: #FFB347; /* orange accent */
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -69,9 +69,9 @@ def set_style():
 
         .kpi-card h2 {
             font-size: 30px;
-            color: #00FF9C;
+            color: #FFD700; /* yellow accent */
             margin: 0;
-            text-shadow: 0 0 10px rgba(0,255,156,0.6);
+            text-shadow: 0 0 10px rgba(255,215,0,0.6);
         }
 
         /* ===============================
@@ -92,7 +92,7 @@ def set_style():
         }
 
         .stDataFrame th {
-            background-color: #00FF9C;
+            background-color: #00C8FF; /* blue accent */
             color: #0B0F14;
             padding: 10px;
             text-align: left;
@@ -134,7 +134,7 @@ def set_style():
            BUTTONS
         ===============================*/
         button {
-            background: linear-gradient(135deg, #00FF9C, #00C8FF) !important;
+            background: linear-gradient(135deg, #00FF9C, #00C8FF, #FFB347, #FFD700) !important;
             color: #0B0F14 !important;
             border-radius: 6px !important;
             padding: 0.55em 1.4em !important;
@@ -177,4 +177,5 @@ def kpi_card(title, value, color="#00FF9C"):
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
 
