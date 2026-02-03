@@ -71,7 +71,7 @@ st.text_input(
 # -------------------------------
 # FILE UPLOAD
 # -------------------------------
-st.markdown("## Analytics BI")
+st.markdown("## ")
 uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
