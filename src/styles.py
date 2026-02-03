@@ -4,16 +4,16 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Hacker-style Neon Theme for Analytics BI"""
+    """Apply Hacker/Cyber Analyst Neon Theme"""
     st.markdown(
         f"""
         <style>
         /* ===============================
-           GLOBAL BACKGROUND (NEON LIGHT)
+           GLOBAL BACKGROUND (DARK)
         ===============================*/
         .stApp {{
-            background-color: #EAFDFC;
-            color: #0F111A;
+            background-color: #0F111A;  /* Dark Night Blue */
+            color: #E0E0E0;
             font-family: 'Courier New', monospace;
         }}
 
@@ -21,13 +21,13 @@ def set_style():
            HEADERS
         ===============================*/
         h1, h2, h3, h4 {{
-            color: #0F111A;
+            color: #39FF14;  /* Neon Green */
             font-weight: 600;
             font-family: 'Courier New', monospace;
         }}
 
         h1 {{
-            border-bottom: 2px solid #0FF;
+            border-bottom: 2px solid #00FFFF;  /* Neon Cyan */
             padding-bottom: 6px;
             margin-bottom: 20px;
         }}
@@ -36,7 +36,7 @@ def set_style():
            DESCRIPTION TEXT
         ===============================*/
         .stMarkdown p {{
-            color: #333333;
+            color: #B0B0B0;
             font-size: 14px;
         }}
 
@@ -44,54 +44,54 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {{
-            background-color: #FFFFFF;
+            background-color: #1A1C2A;  /* Dark card background */
             border-radius: 12px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 6px 20px rgba(0,255,255,0.4);
-            border-left: 6px solid #0FF;
+            box-shadow: 0 6px 20px rgba(57,255,20,0.6);
+            border-left: 6px solid #39FF14;  /* Neon green accent */
             margin-bottom: 18px;
             transition: transform 0.2s ease-in-out;
         }}
 
         .kpi-card:hover {{
             transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(0,255,255,0.6);
+            box-shadow: 0 8px 28px rgba(0,255,255,0.6);  /* Neon glow */
         }}
 
         .kpi-card h4 {{
             font-size: 13px;
-            color: #0FF;
+            color: #39FF14;
             margin-bottom: 6px;
         }}
 
         .kpi-card h2 {{
             font-size: 32px;
-            color: #00CED1;
+            color: #00FFFF;  /* Neon cyan */
             margin: 0;
-            text-shadow: 0 0 6px #00CED1;
+            text-shadow: 0 0 6px #00FFFF;
         }}
 
         /* ===============================
            DATAFRAMES
         ===============================*/
         .stDataFrame {{
-            background-color: #FFFFFF;
+            background-color: #1A1C2A;
             border-radius: 10px;
             padding: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }}
 
         .stDataFrame table {{
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #0F111A;
+            color: #E0E0E0;
         }}
 
         .stDataFrame th {{
-            background-color: #0FF;
-            color: #0F111A;
+            background-color: #0A0F1F;  /* Dark header */
+            color: #39FF14;  /* Neon green */
             padding: 10px;
             text-align: left;
             font-weight: 600;
@@ -99,52 +99,52 @@ def set_style():
 
         .stDataFrame td {{
             padding: 8px;
-            border-bottom: 1px solid #D0F0F0;
+            border-bottom: 1px solid #22273B;
         }}
 
         .stDataFrame tr:nth-child(even) {{
-            background-color: #E0F7FA;
+            background-color: #111421;
         }}
 
         .stDataFrame tr:hover {{
-            background-color: #CFF8FA;
+            background-color: #262C3C;
         }}
 
         /* ===============================
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {{
-            background-color: #FFFFFF;
-            border-right: 2px solid #0FF;
+            background-color: #111421;
+            border-right: 2px solid #39FF14;
         }}
 
         /* ===============================
            INPUTS
         ===============================*/
         input, textarea, select {{
-            background-color: #F0FCFD !important;
-            color: #0F111A !important;
+            background-color: #1A1E2B !important;
+            color: #E0E0E0 !important;
             border-radius: 6px !important;
-            border: 1px solid #0FF !important;
+            border: 1px solid #39FF14 !important;
         }}
 
         /* ===============================
            BUTTONS
         ===============================*/
         button {{
-            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            background: linear-gradient(135deg, #0FF, #39FF14) !important;
             color: #0F111A !important;
             border-radius: 8px !important;
             padding: 0.55em 1.4em !important;
             font-weight: 600 !important;
             border: none !important;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 0 6px #0FF;
+            box-shadow: 0 0 6px #39FF14;
         }}
 
         button:hover {{
-            background: linear-gradient(135deg, #00CED1, #0FF) !important;
-            box-shadow: 0 0 12px #0FF;
+            background: linear-gradient(135deg, #39FF14, #0FF) !important;
+            box-shadow: 0 0 12px #39FF14;
             transform: translateY(-1px);
         }}
 
@@ -152,12 +152,12 @@ def set_style():
            DOWNLOAD BUTTONS
         ===============================*/
         div.stDownloadButton > button {{
-            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            background: linear-gradient(135deg, #0FF, #39FF14) !important;
             color: #0F111A !important;
         }}
 
         div.stDownloadButton > button:hover {{
-            background: linear-gradient(135deg, #00CED1, #0FF) !important;
+            background: linear-gradient(135deg, #39FF14, #0FF) !important;
         }}
 
         /* ===============================
@@ -183,7 +183,7 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
-def kpi_card(title, value, color="#0FF"):
+def kpi_card(title, value, color="#39FF14"):
     """Hacker-style KPI card"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
@@ -191,3 +191,4 @@ def kpi_card(title, value, color="#0FF"):
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
