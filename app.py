@@ -71,16 +71,24 @@ st.text_input(
 # -------------------------------
 # FILE UPLOAD
 # -------------------------------
-st.markdown("##Upload your excel file here ")
-uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
-if uploaded_file:
+st.markdown("## Upload your Excel file")
+
+uploaded_file = st.file_uploader(
+    "Choose an Excel file (.xlsx)",
+    type="xlsx"
+)
+
+if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)
     st.session_state.data = df.copy()
-    with st.expander("Preview Uploaded Data"):
+
+    with st.expander("Preview uploaded data"):
         st.dataframe(df.head(), use_container_width=True)
+
 elif st.session_state.data.empty:
-    st.info("Please upload an Excel file to continue.")
+    st.info("📂 Please upload an Excel file to proceed.")
     st.stop()
+
 
 # -------------------------------
 # DATA CLEANING & ANONYMIZATION
