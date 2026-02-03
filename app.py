@@ -186,6 +186,10 @@ def style_sla(df, column='SLA %'):
 # =====================================================
 # PAGE RENDERING
 # =====================================================
+
+# ---------------------------
+# DASHBOARD PAGE
+# ---------------------------
 if selected_page == "Dashboard":
     st.header("📊 Dashboard Overview")
     data = st.session_state.data if not st.session_state.data.empty else upload_file()
@@ -249,11 +253,95 @@ if selected_page == "Dashboard":
         fig = px.line(monthly_summary.sort_values('Month'), x='Month', y=['Closure %','SLA %'], markers=True)
         st.plotly_chart(fig, use_container_width=True)
 
-# =====================================================
-# Remaining pages (Advanced Analytics, Data Explorer, Export Center, Settings)
-# =====================================================
-# You can keep the existing logic from your current app.py
-# but replace 'page' variable with 'selected_page'
+# ---------------------------
+# ADVANCED ANALYTICS PAGE
+# ---------------------------
+elif selected_page == "Advanced Analytics":
+    st.header("🔍 Advanced Analytics")
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    data = clean_data(data)
+    data, monthly_summary = calculate_monthly_summary(data)
+
+    st.subheader("SLA vs Resolution Days Scatter")
+    if 'Duration (days)' in data.columns and 'SLA TTO Done' in data.columns:
+        fig = px.scatter(
+            data, x='Duration (days)', y='SLA TTO Done',
+            color='Technician Name' if 'Technician Name' in data.columns else None,
+            size='Done Tasks' if 'Done Tasks' in data.columns else None,
+            hover_data=['Company Name'] if 'Company Name' in data.columns else None
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("Technician SLA Heatmap")
+    if 'Technician Name' in data.columns and 'Month' in data.columns:
+        pivot = data.pivot_table(index='Technician Name', columns='Month', values='SLA TTO Done',
+                                 aggfunc='sum', fill_value=0)
+        fig_heat = ff.create_annotated_heatmap(z=pivot.values, x=list(pivot.columns), y=list(pivot.index),
+                                               colorscale='Viridis', showscale=True)
+        st.plotly_chart(fig_heat, use_container_width=True)
+
+# ---------------------------
+# DATA EXPLORER PAGE
+# ---------------------------
+elif selected_page == "Data Explorer":
+    st.header("📂 Data Explorer")
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    data = clean_data(data)
+
+    search_term = st.text_input("Search Technician, Caller, or Company")
+    filtered_data = data[
+        data['Technician Name'].str.contains(search_term, case=False, na=False) |
+        data['Caller Name'].str.contains(search_term, case=False, na=False) |
+        data['Company Name'].str.contains(search_term, case=False, na=False)
+    ] if search_term else data
+    st.dataframe(filtered_data, use_container_width=True)
+
+    # Download filtered data
+    st.markdown("### Download Filtered Data")
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        filtered_data.to_excel(writer, sheet_name='Filtered_Data', index=False)
+    st.download_button("Download Excel", output.getvalue(), "filtered_data.xlsx")
+
+# ---------------------------
+# EXPORT CENTER PAGE
+# ---------------------------
+elif selected_page == "Export Center":
+    st.header("📤 Export Center")
+    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    monthly_summary = st.session_state.monthly_summary
+    tech_summary = st.session_state.tech_summary
+    caller_summary = st.session_state.caller_summary
+
+    st.markdown("### Download Reports")
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        data.to_excel(writer, sheet_name='Processed_Data', index=False)
+        monthly_summary.to_excel(writer, sheet_name='Monthly_Summary', index=False)
+        if not tech_summary.empty: tech_summary.to_excel(writer, sheet_name='Technician_Summary', index=False)
+        if not caller_summary.empty: caller_summary.to_excel(writer, sheet_name='Caller_Summary', index=False)
+    st.download_button("Download Excel", output.getvalue(), "analytics_report.xlsx")
+
+    # PowerPoint export
+    prs = create_ppt({
+        'Monthly KPI': monthly_summary,
+        'Technician-wise KPI': tech_summary,
+        'Caller-wise KPI': caller_summary
+    })
+    ppt_output = BytesIO()
+    prs.save(ppt_output)
+    ppt_output.seek(0)
+    st.download_button("Download PowerPoint", ppt_output, "analytics_report.pptx")
+
+# ---------------------------
+# SETTINGS PAGE
+# ---------------------------
+elif selected_page == "Settings":
+    st.header("⚙️ Settings")
+    st.session_state.show_kpis = st.checkbox("Show KPI Cards", value=st.session_state.show_kpis)
+    st.session_state.show_trends = st.checkbox("Show Trend Charts", value=st.session_state.show_trends)
+    st.session_state.anonymize_data = st.checkbox("Enable Data Anonymization", value=st.session_state.anonymize_data)
+
 
 
 
