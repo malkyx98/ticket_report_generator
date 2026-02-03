@@ -64,7 +64,7 @@ st.text_input(
     "",
     value=st.session_state.get("universal_search", ""),
     key="universal_search",
-    placeholder="Search Technician, Caller, or Company",
+    placeholder="Search any keyword here",
     label_visibility="collapsed"
 )
 
