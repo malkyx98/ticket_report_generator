@@ -3,26 +3,22 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from io import BytesIO
-from PIL import Image
 from src.styles import set_style, show_logo, kpi_card
 from src.data_processing import clean_name, compute_kpis
 from src.ppt_export import create_ppt
 import plotly.express as px
 import plotly.figure_factory as ff
-import os
 
-# -----------------------------
-# PAGE CONFIG
-# -----------------------------
-st.set_page_config(
-    page_title="Alayticx BI",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# -------------------------------
+# PAGE CONFIG & CUSTOM STYLE
+# -------------------------------
+st.set_page_config(page_title="Alayticx BI", layout="wide")
+set_style()
+show_logo()
 
-# -----------------------------
+# -------------------------------
 # SESSION STATE DEFAULTS
-# -----------------------------
+# -------------------------------
 defaults = {
     "data": pd.DataFrame(),
     "monthly_summary": pd.DataFrame(),
@@ -40,56 +36,9 @@ for key, val in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = val
 
-# -----------------------------
-# LOAD LOGO SAFELY
-# -----------------------------
-logo_path = "logo.png"
-if os.path.exists(logo_path):
-    logo = Image.open(logo_path)
-else:
-    st.warning("Logo file not found! Using placeholder logo.")
-    logo = Image.new("RGB", (70, 70), color=(200, 200, 200))
-
-# -----------------------------
-# TOP NAVBAR
-# -----------------------------
-col_logo, col_search, col_nav = st.columns([1, 3, 3])
-
-# Logo + App Name
-with col_logo:
-    st.image(logo, width=70)
-    st.markdown(
-        '<h2 style="color:#0B5394; display:inline; margin-left:10px; font-family:sans-serif;">Alayticx BI</h2>',
-        unsafe_allow_html=True
-    )
-
-# Universal Search Bar
-with col_search:
-    st.session_state.universal_search = st.text_input(
-        "🔍 Search Technician, Caller, or Company",
-        value=st.session_state.universal_search,
-        key="top_search",
-        placeholder="Type to search...",
-        help="Search across Technician, Caller, or Company"
-    )
-
-# Navigation Buttons
-pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
-with col_nav:
-    btn_cols = st.columns(len(pages))
-    for i, pg in enumerate(pages):
-        if btn_cols[i].button(pg):
-            st.session_state.page = pg
-
-# Horizontal Separator
-st.markdown(
-    '<hr style="border:2px solid #0B5394; margin-top:10px; margin-bottom:20px;">',
-    unsafe_allow_html=True
-)
-
-# -----------------------------
-# HELPER FUNCTIONS
-# -----------------------------
+# -------------------------------
+# FILE UPLOAD FUNCTION
+# -------------------------------
 def upload_file():
     st.markdown("## Upload Ticket Data")
     uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
@@ -103,18 +52,21 @@ def upload_file():
         st.info("Please upload an Excel file to continue.")
         st.stop()
 
+# -------------------------------
+# DATA CLEANING & ANONYMIZATION
+# -------------------------------
 def clean_data(df):
-    if 'Organization->Name' in df.columns: 
+    if 'Organization->Name' in df.columns:
         df['Company Name'] = clean_name(df, 'Organization->Name')
-    else: 
+    else:
         df['Company Name'] = ""
-    if 'Agent->Full name' in df.columns: 
+    if 'Agent->Full name' in df.columns:
         df['Technician Name'] = clean_name(df, 'Agent->Full name')
-    else: 
+    else:
         df['Technician Name'] = ""
-    if 'Caller->Full name' in df.columns: 
+    if 'Caller->Full name' in df.columns:
         df['Caller Name'] = clean_name(df, 'Caller->Full name')
-    else: 
+    else:
         df['Caller Name'] = ""
     return df
 
@@ -123,6 +75,68 @@ def anonymize(df, columns):
         df[col] = [f"{col.split('->')[0]} {i+1}" for i in range(len(df))]
     return df
 
+# -------------------------------
+# KPI & SUMMARY FUNCTIONS
+# -------------------------------
+def calculate_monthly_summary(df):
+    if 'Start date' in df.columns:
+        df['Start date'] = pd.to_datetime(df['Start date'], errors='coerce')
+        df['Month'] = df['Start date'].dt.to_period('M').astype(str)
+    else:
+        df['Month'] = 'Unknown'
+
+    df = compute_kpis(df)
+    df['Duration (days)'] = pd.to_numeric(df.get('Duration (days)', 0), errors='coerce').fillna(0)
+
+    monthly_summary = (
+        df.groupby('Month')
+        .agg({
+            'Ref': 'count',
+            'Done Tasks': 'sum',
+            'Pending Tasks': 'sum',
+            'SLA TTO Done': 'sum',
+            'SLA TTR Done': 'sum',
+            'Duration (days)': 'mean'
+        })
+        .rename(columns={
+            'Ref': 'Total Tickets',
+            'Done Tasks': 'Closed Tickets',
+            'Pending Tasks': 'Pending Tickets',
+            'Duration (days)': 'Avg Resolution Days'
+        })
+        .reset_index()
+    )
+
+    monthly_summary['SLA TTO Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTO Done']
+    monthly_summary['SLA TTR Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTR Done']
+    monthly_summary['SLA Violations'] = ((monthly_summary['SLA TTO Violations'] + monthly_summary['SLA TTR Violations']) / 2).round(0)
+    monthly_summary['Closure %'] = (monthly_summary['Closed Tickets'] / monthly_summary['Total Tickets'] * 100).round(1)
+    monthly_summary['SLA %'] = ((monthly_summary['SLA TTO Done'] + monthly_summary['SLA TTR Done']) / (2 * monthly_summary['Total Tickets']) * 100).round(1)
+    monthly_summary['Avg Resolution Days'] = monthly_summary['Avg Resolution Days'].fillna(0)
+
+    return df, monthly_summary
+
+def top_performers(df, role_col):
+    summary = (
+        df.groupby(role_col)
+        .agg(Tickets=('Ref','count'), Done=('Done Tasks','sum'),
+             SLA_Done=('SLA TTO Done','sum'), SLA_TTR=('SLA TTR Done','sum'))
+        .reset_index()
+    )
+    summary['SLA %'] = ((summary['SLA_Done'] + summary['SLA_TTR']) / (summary['Tickets']*2) * 100).round(1)
+    top5 = summary.sort_values('SLA %', ascending=False).head(5)
+    return summary, top5
+
+def style_sla(df, column='SLA %'):
+    def color(val):
+        if val >= 90: return "green"
+        elif val >= 75: return "orange"
+        else: return "red"
+    return df.style.applymap(lambda x: f"color:{color(x)}; font-weight:bold", subset=[column])
+
+# -------------------------------
+# UNIVERSAL SEARCH
+# -------------------------------
 def apply_universal_search(df):
     search = st.session_state.get("universal_search", "")
     if search:
@@ -133,13 +147,20 @@ def apply_universal_search(df):
         ]
     return df
 
+# -------------------------------
+# FILTER LAST 3 MONTHS
+# -------------------------------
 def filter_last_3_months(df):
     if 'Start date' in df.columns:
         today = pd.Timestamp.today()
         three_months_ago = today - pd.DateOffset(months=3)
-        return df[df['Start date'] >= three_months_ago]
+        df_filtered = df[df['Start date'] >= three_months_ago]
+        return df_filtered
     return df
 
+# -------------------------------
+# PREPARE DATA FUNCTION
+# -------------------------------
 def prepare_data():
     data = st.session_state.data if not st.session_state.data.empty else upload_file()
     data = clean_data(data)
@@ -147,35 +168,76 @@ def prepare_data():
     data = filter_last_3_months(data)
     return data
 
-# -----------------------------
-# PAGE CONTENT
-# -----------------------------
-page = st.session_state.get("page", "Dashboard")
-st.markdown(f"## 🏠 {page}")
-st.markdown("---")
+# -------------------------------
+# TOP NAVIGATION BAR
+# -------------------------------
+# Google-style search bar
+st.markdown(
+    """
+    <style>
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .search-box { padding:5px; width:400px; border-radius:25px; border:1px solid #ccc; }
+    </style>
+    <div class="top-bar">
+        <div>
+            <h2>Alayticx BI</h2>
+        </div>
+        <div>
+            <input type="text" class="search-box" id="universal_search_html" placeholder="🔍 Search Technician, Caller, or Company">
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
+# Bind Streamlit input to session state
+st.session_state.universal_search = st.text_input(
+    "", value=st.session_state.get("universal_search",""),
+    placeholder="Search Technician, Caller, or Company",
+    key="search_input", label_visibility="collapsed"
+)
+
+# Top navigation buttons
+pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
+cols = st.columns(len(pages))
+for i, pg in enumerate(pages):
+    if cols[i].button(pg):
+        st.session_state.page = pg
+
+page = st.session_state.get("page", "Dashboard")
+
+# -------------------------------
+# PAGE LOGIC
+# -------------------------------
 if page == "Dashboard":
-    st.markdown('<h1 style="color:#0B5394;">📊 Dashboard Overview</h1>', unsafe_allow_html=True)
-    st.markdown('<p>Real-time BI insights at a glance</p>', unsafe_allow_html=True)
+    # Dashboard code
     data = prepare_data()
-    st.markdown("Dashboard content goes here...", unsafe_allow_html=True)
+    data, monthly_summary = calculate_monthly_summary(data)
+
+    if st.session_state.show_kpis:
+        st.markdown("### Key Metrics")
+        c1,c2,c3,c4,c5,c6 = st.columns(6)
+        c1.metric("Total Tickets", int(monthly_summary['Total Tickets'].sum()))
+        c2.metric("Closed Tickets", int(monthly_summary['Closed Tickets'].sum()))
+        c3.metric("Pending Tickets", int(monthly_summary['Pending Tickets'].sum()))
+        c4.metric("SLA Violations", int(monthly_summary['SLA Violations'].sum()))
+        c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
+        c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
 
 elif page == "Advanced Analytics":
-    st.markdown('<h1 style="color:#0B5394;">📈 Advanced Analytics</h1>', unsafe_allow_html=True)
-    st.markdown('<p>Explore trends, correlations, and performance metrics</p>', unsafe_allow_html=True)
+    # Advanced Analytics code
     data = prepare_data()
-    st.markdown("Analytics content goes here...", unsafe_allow_html=True)
+    data, monthly_summary = calculate_monthly_summary(data)
+    st.markdown("Advanced Analytics Page - Work in Progress")
 
 elif page == "Data Explorer":
-    st.markdown('<h1 style="color:#0B5394;">🔍 Data Explorer</h1>', unsafe_allow_html=True)
     data = prepare_data()
-    st.markdown("Data explorer content goes here...", unsafe_allow_html=True)
+    st.markdown("Data Explorer Page - Work in Progress")
 
 elif page == "Export Center":
-    st.markdown('<h1 style="color:#0B5394;">📤 Export Center</h1>', unsafe_allow_html=True)
     data = prepare_data()
-    st.markdown("Export center content goes here...", unsafe_allow_html=True)
+    st.markdown("Export Center Page - Work in Progress")
 
 elif page == "Settings":
-    st.markdown('<h1 style="color:#0B5394;">⚙️ Settings</h1>', unsafe_allow_html=True)
-    st.markdown("Settings content goes here...", unsafe_allow_html=True)
+    st.markdown("Settings Page - Work in Progress")
+
