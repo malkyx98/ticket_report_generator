@@ -1,4 +1,7 @@
-# app.py
+# =====================================================
+# app.py – Streamlit Analytics BI Dashboard
+# =====================================================
+
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -9,25 +12,25 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import numpy as np
 
-# -------------------------------
-# PAGE CONFIG
-# -------------------------------
+# =====================================================
+# PAGE CONFIGURATION
+# =====================================================
 st.set_page_config(
     page_title="Analytics BI",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# -------------------------------
+# =====================================================
 # CUSTOM STYLE & LOGO
-# -------------------------------
+# =====================================================
 set_style()
 show_logo()
 
-# -------------------------------
+# =====================================================
 # SESSION STATE DEFAULTS
-# -------------------------------
-for key, default in {
+# =====================================================
+default_state = {
     "data": pd.DataFrame(),
     "monthly_summary": pd.DataFrame(),
     "tech_summary": pd.DataFrame(),
@@ -35,12 +38,13 @@ for key, default in {
     "show_kpis": True,
     "show_trends": True,
     "anonymize_data": False
-}.items():
+}
+for key, default in default_state.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
 # =====================================================
-# SIDEBAR
+# SIDEBAR – NAVIGATION
 # =====================================================
 st.sidebar.title("Navigation")
 page = st.sidebar.radio(
@@ -48,12 +52,9 @@ page = st.sidebar.radio(
     ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
 )
 
-# -------------------------------
-# RESET SESSION SAFELY
-# -------------------------------
+# Safe session reset
 if st.sidebar.button("Reset Session"):
-    keys_to_reset = list(st.session_state.keys())
-    for key in keys_to_reset:
+    for key in st.session_state.keys():
         st.session_state[key] = None
     st.experimental_rerun()
 
@@ -69,17 +70,28 @@ def upload_file():
         with st.expander("Preview Uploaded Data"):
             st.dataframe(df.head(), use_container_width=True)
         return df
-    else:
-        st.info("Please upload an Excel file to continue.")
-        st.stop()
+    st.info("Please upload an Excel file to continue.")
+    st.stop()
 
 # =====================================================
 # DATA CLEANING & ANONYMIZATION
 # =====================================================
 def clean_data(df):
-    df['Company Name'] = clean_name(df, 'Organization->Name') if 'Organization->Name' in df.columns else ""
-    df['Technician Name'] = clean_name(df, 'Agent->Full name') if 'Agent->Full name' in df.columns else ""
-    df['Caller Name'] = clean_name(df, 'Caller->Full name') if 'Caller->Full name' in df.columns else ""
+    if 'Organization->Name' in df.columns:
+        df['Company Name'] = clean_name(df, 'Organization->Name')
+    else:
+        df['Company Name'] = ""
+        
+    if 'Agent->Full name' in df.columns:
+        df['Technician Name'] = clean_name(df, 'Agent->Full name')
+    else:
+        df['Technician Name'] = ""
+        
+    if 'Caller->Full name' in df.columns:
+        df['Caller Name'] = clean_name(df, 'Caller->Full name')
+    else:
+        df['Caller Name'] = ""
+        
     return df
 
 def anonymize(df, columns):
@@ -91,6 +103,8 @@ def anonymize(df, columns):
 # KPI & SUMMARY FUNCTIONS
 # =====================================================
 def calculate_monthly_summary(df):
+    df = df.copy()
+    
     if 'Start date' in df.columns:
         df['Start date'] = pd.to_datetime(df['Start date'], errors='coerce')
         df['Month'] = df['Start date'].dt.to_period('M').astype(str)
@@ -118,19 +132,23 @@ def calculate_monthly_summary(df):
         })
         .reset_index()
     )
+    
     monthly_summary['SLA TTO Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTO Done']
     monthly_summary['SLA TTR Violations'] = monthly_summary['Total Tickets'] - monthly_summary['SLA TTR Done']
     monthly_summary['SLA Violations'] = ((monthly_summary['SLA TTO Violations'] + monthly_summary['SLA TTR Violations']) / 2).round(0)
     monthly_summary['Closure %'] = (monthly_summary['Closed Tickets'] / monthly_summary['Total Tickets'] * 100).round(1)
     monthly_summary['SLA %'] = ((monthly_summary['SLA TTO Done'] + monthly_summary['SLA TTR Done']) / (2 * monthly_summary['Total Tickets']) * 100).round(1)
     monthly_summary['Avg Resolution Days'] = monthly_summary['Avg Resolution Days'].fillna(0)
+    
     return df, monthly_summary
 
 def top_performers(df, role_col):
     summary = (
         df.groupby(role_col)
-        .agg(Tickets=('Ref','count'), Done=('Done Tasks','sum'),
-             SLA_Done=('SLA TTO Done','sum'), SLA_TTR=('SLA TTR Done','sum'))
+        .agg(Tickets=('Ref','count'),
+             Done=('Done Tasks','sum'),
+             SLA_Done=('SLA TTO Done','sum'),
+             SLA_TTR=('SLA TTR Done','sum'))
         .reset_index()
     )
     summary['SLA %'] = ((summary['SLA_Done'] + summary['SLA_TTR']) / (summary['Tickets']*2) * 100).round(1)
@@ -152,11 +170,14 @@ if page == "Dashboard":
     data = st.session_state.data if not st.session_state.data.empty else upload_file()
     data = clean_data(data)
 
-    # Exclude filters
+    # -------------------------------
+    # FILTERS
+    # -------------------------------
     col1, col2 = st.columns(2)
     with col1:
         companies_to_remove = st.multiselect("Exclude Companies", data['Company Name'].dropna().unique())
-        if companies_to_remove: data = data[~data['Company Name'].isin(companies_to_remove)]
+        if companies_to_remove:
+            data = data[~data['Company Name'].isin(companies_to_remove)]
     with col2:
         persons_options = list(set(data['Technician Name'].tolist() + data['Caller Name'].tolist()))
         persons_to_remove = st.multiselect("Exclude Persons", persons_options)
@@ -186,7 +207,7 @@ if page == "Dashboard":
         c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
         c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
 
-    # Top Performers
+    # Top Performers Charts
     if 'Technician Name' in data.columns:
         st.subheader("Top 5 Technicians")
         tech_summary, top_techs = top_performers(data, 'Technician Name')
@@ -203,7 +224,7 @@ if page == "Dashboard":
         st.dataframe(style_sla(top_callers), use_container_width=True)
         st.session_state.caller_summary = caller_summary
 
-    # Monthly Trend
+    # Monthly Trend Chart
     if st.session_state.show_trends:
         st.subheader("Monthly KPI Trend")
         fig = px.line(monthly_summary.sort_values('Month'), x='Month', y=['Closure %','SLA %'], markers=True)
@@ -220,15 +241,18 @@ elif page == "Advanced Analytics":
 
     st.subheader("SLA vs Resolution Days Scatter")
     if 'Duration (days)' in data.columns and 'SLA TTO Done' in data.columns:
-        fig = px.scatter(data, x='Duration (days)', y='SLA TTO Done',
-                         color='Technician Name' if 'Technician Name' in data.columns else None,
-                         size='Done Tasks' if 'Done Tasks' in data.columns else None,
-                         hover_data=['Company Name'] if 'Company Name' in data.columns else None)
+        fig = px.scatter(
+            data, x='Duration (days)', y='SLA TTO Done',
+            color='Technician Name' if 'Technician Name' in data.columns else None,
+            size='Done Tasks' if 'Done Tasks' in data.columns else None,
+            hover_data=['Company Name'] if 'Company Name' in data.columns else None
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Technician SLA Heatmap")
     if 'Technician Name' in data.columns and 'Month' in data.columns:
-        pivot = data.pivot_table(index='Technician Name', columns='Month', values='SLA TTO Done', aggfunc='sum', fill_value=0)
+        pivot = data.pivot_table(index='Technician Name', columns='Month', values='SLA TTO Done',
+                                 aggfunc='sum', fill_value=0)
         fig_heat = ff.create_annotated_heatmap(z=pivot.values, x=list(pivot.columns), y=list(pivot.index),
                                                colorscale='Viridis', showscale=True)
         st.plotly_chart(fig_heat, use_container_width=True)
@@ -240,7 +264,6 @@ elif page == "Data Explorer":
     st.header("📂 Data Explorer")
     data = st.session_state.data if not st.session_state.data.empty else upload_file()
     data = clean_data(data)
-    data, _ = calculate_monthly_summary(data)
 
     search_term = st.text_input("Search Technician, Caller, or Company")
     filtered_data = data[
@@ -250,6 +273,7 @@ elif page == "Data Explorer":
     ] if search_term else data
     st.dataframe(filtered_data, use_container_width=True)
 
+    # Download filtered data
     st.markdown("### Download Filtered Data")
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -275,6 +299,7 @@ elif page == "Export Center":
         if not caller_summary.empty: caller_summary.to_excel(writer, sheet_name='Caller_Summary', index=False)
     st.download_button("Download Excel", output.getvalue(), "analytics_report.xlsx")
 
+    # PowerPoint export
     prs = create_ppt({
         'Monthly KPI': monthly_summary,
         'Technician-wise KPI': tech_summary,
@@ -293,3 +318,4 @@ elif page == "Settings":
     st.session_state.show_kpis = st.checkbox("Show KPI Cards", value=st.session_state.show_kpis)
     st.session_state.show_trends = st.checkbox("Show Trend Charts", value=st.session_state.show_trends)
     st.session_state.anonymize_data = st.checkbox("Enable Data Anonymization", value=st.session_state.anonymize_data)
+
