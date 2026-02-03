@@ -34,100 +34,116 @@ for key, default in {
     "decimal_places": 1,
     "default_format": "Excel",
     "show_tooltips": True,
-    "universal_search": ""
+    "universal_search": "",
+    "page": "Dashboard"
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
 # ==============================
-# GOOGLE-STYLE UNIVERSAL SEARCH BAR AT TOP
+# STYLES
 # ==============================
 st.markdown("""
-    <style>
-    /* Top sticky search bar */
-    .top-search {
-        position: sticky;
-        top: 0;
-        z-index: 999;
-        width: 100%;
-        background-color: #fff;
-        padding: 10px 20px;
-        border-bottom: 1px solid #dfe1e5;
-        display: flex;
-        justify-content: center;
-        box-shadow: 0 1px 6px rgba(32,33,36,.28);
-    }
-    .top-search input {
-        width: 60%;
-        max-width: 700px;
-        border: 1px solid #dfe1e5;
-        border-radius: 24px;
-        padding: 10px 15px;
-        font-size: 16px;
-        outline: none;
-    }
+<style>
+/* Top sticky search bar */
+.top-search {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    width: 100%;
+    background-color: #fff;
+    padding: 10px 20px;
+    border-bottom: 1px solid #dfe1e5;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 1px 6px rgba(32,33,36,.28);
+}
+.top-search input {
+    width: 60%;
+    max-width: 700px;
+    border: 1px solid #dfe1e5;
+    border-radius: 24px;
+    padding: 10px 15px;
+    font-size: 16px;
+    outline: none;
+}
 
-    /* Top navigation tabs */
-    .top-nav {
-        position: sticky;
-        top: 60px;
-        z-index: 998;
-        width: 100%;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #ccc;
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        padding: 10px 0;
-    }
-    .top-nav button {
-        background-color: #e2e6ea;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    .top-nav button:hover {
-        background-color: #cfd3d7;
-    }
-    </style>
+/* Top navigation tabs */
+.top-nav {
+    position: sticky;
+    top: 60px;
+    z-index: 998;
+    width: 100%;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 0;
+}
+.top-nav button {
+    background-color: #e2e6ea;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.top-nav button:hover {
+    background-color: #cfd3d7;
+}
+</style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
-# Top Search Bar
-# -------------------------------
+# ==============================
+# TOP SEARCH BAR
+# ==============================
 st.markdown(
-    """
+    f"""
     <div class="top-search">
-        <input type="text" id="universal_search_input" placeholder="🔍 Search Technician, Caller, or Company">
+        <input type="text" id="universal_search_input" placeholder="🔍 Search Technician, Caller, or Company" value="{st.session_state.universal_search}">
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Streamlit binding for search input
+# Use Streamlit input only (bind to session state)
 st.session_state.universal_search = st.text_input(
-    "", value=st.session_state.universal_search, placeholder="Search Technician, Caller, or Company"
+    "", value=st.session_state.universal_search, placeholder="Search Technician, Caller, or Company", key="search_input", label_visibility="collapsed"
 )
 
-# -------------------------------
-# Top Navigation Tabs
-# -------------------------------
-st.markdown("""
-    <div class="top-nav">
-        <button onclick="window.location.href='#Dashboard'">Dashboard</button>
-        <button onclick="window.location.href='#Advanced Analytics'">Advanced Analytics</button>
-        <button onclick="window.location.href='#Data Explorer'">Data Explorer</button>
-        <button onclick="window.location.href='#Export Center'">Export Center</button>
-        <button onclick="window.location.href='#Settings'">Settings</button>
-    </div>
-""", unsafe_allow_html=True)
+# ==============================
+# TOP NAVIGATION
+# ==============================
+pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
+cols = st.columns(len(pages))
+for i, pg in enumerate(pages):
+    if cols[i].button(pg):
+        st.session_state.page = pg
+
+page = st.session_state.page  # current page
+
+# ==============================
+# APPLY UNIVERSAL SEARCH FUNCTION
+# ==============================
+def apply_search(df):
+    if st.session_state.universal_search:
+        df = df[
+            df['Technician Name'].str.contains(st.session_state.universal_search, case=False, na=False) |
+            df['Caller Name'].str.contains(st.session_state.universal_search, case=False, na=False) |
+            df['Company Name'].str.contains(st.session_state.universal_search, case=False, na=False)
+        ]
+    return df
 
 # ==============================
 # PAGE LOGIC
 # ==============================
-# Your existing functions for:
+# Use your existing page logic here:
+# if page == "Dashboard": ...
+# data = prepare_data()
+# data = apply_search(data)
+# ... rest of your dashboard logic
+
 # - upload_file()
 # - clean_data()
 # - anonymize()
