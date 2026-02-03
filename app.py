@@ -40,10 +40,37 @@ for key, val in defaults.items():
 tabs = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
 tab = st.tabs(tabs)
 
-# -------------------------------
-# UNIVERSAL SEARCH
-# -------------------------------
-universal_search = st.text_input("🔍 Search Technician, Caller, or Company", "")
+# ==============================
+# GOOGLE-STYLE UNIVERSAL SEARCH BAR
+# ==============================
+st.markdown("""
+    <style>
+    .search-box {
+        max-width: 700px;
+        margin: 10px auto;
+        padding: 10px 15px;
+        border: 1px solid #dfe1e5;
+        border-radius: 24px;
+        box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+    }
+    .search-box input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 16px;
+        padding: 5px 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Centered Google-style search bar
+search_col1, search_col2, search_col3 = st.columns([1,6,1])
+with search_col2:
+    universal_search = st.text_input("🔍 Search Technician, Caller, or Company", "", key="universal_search", placeholder="Type to search...", help="Search across Technician, Caller, or Company")
+
 
 # -------------------------------
 # FILE UPLOAD & DATA PREPARATION
