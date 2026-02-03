@@ -1,171 +1,247 @@
+# src/styles.py
 import streamlit as st
-from PIL import Image
 import os
 
 def set_style():
-    """Apply White Background Theme with All Black Text"""
-    st.markdown(
-        """
-        <style>
-        /* ===============================
-           GLOBAL BACKGROUND
-        ===============================*/
-        .stApp {
-            background-color: #FFFFFF; /* white background */
-            color: #000000; /* all text black */
-            font-family: 'Courier New', monospace;
-        }
+    """Analytics BI – Bank-grade CXP Analytics UI (Elegant, Modern, Big Fonts)"""
+    st.markdown("""
+    <style>
 
-        /* ===============================
-           HEADERS
-        ===============================*/
-        h1, h2, h3, h4 {
-            color: #000000; /* headers black */
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-        }
-        h1 {
-            border-bottom: 2px solid #00FF9C; /* green underline */
-            padding-bottom: 6px;
-            margin-bottom: 20px;
-        }
+    /* ==============================
+       GLOBAL APP
+    ============================== */
+    .stApp {
+        background-color: #FFFFFF;
+        color: #0A1F44;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
 
-        /* ===============================
-           TEXT / PARAGRAPHS
-        ===============================*/
-        .stMarkdown p {
-            color: #000000; /* paragraphs black */
-            font-size: 14px;
-        }
+    /* ==============================
+       PAGE TITLES
+    ============================== */
+    .page-title {
+        font-size: 4rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+        color: #0A1F44;
+        border-bottom: 5px solid #FF9C33;
+        padding-bottom: 12px;
+    }
 
-        /* ===============================
-           KPI CARDS
-        ===============================*/
-        .kpi-card {
-            background: #FFFFFF; /* white card */
-            border-radius: 10px;
-            padding: 18px;
-            text-align: center;
-            border-left: 4px solid #00FF9C;
-            margin-bottom: 16px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease-in-out;
-        }
-        .kpi-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 18px rgba(0,255,156,0.25);
-        }
-        .kpi-card h4 {
-            font-size: 12px;
-            color: #000000; /* black text */
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .kpi-card h2 {
-            font-size: 30px;
-            color: #000000; /* black text */
-            margin: 0;
-            text-shadow: none;
-        }
+    .page-subtitle {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #4B5D6B;
+        margin-bottom: 28px;
+    }
 
-        /* ===============================
-           DATAFRAMES
-        ===============================*/
-        .stDataFrame {
-            background-color: #FFFFFF; /* white */
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.05);
-        }
-        .stDataFrame table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 13px;
-            color: #000000; /* all text black */
-        }
-        .stDataFrame th {
-            background-color: #00C8FF; /* blue accent */
-            color: #000000; /* black header text */
-            padding: 10px;
-            font-weight: 700;
-        }
-        .stDataFrame td {
-            padding: 8px;
-            border-bottom: 1px solid #E0E0E0;
-        }
-        .stDataFrame tr:nth-child(even) {
-            background-color: #F7F9FA;
-        }
-        .stDataFrame tr:hover {
-            background-color: #E8F0FE;
-        }
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        color: #0A1F44;
+        border-bottom: 3px solid #FFB84D;
+        padding-bottom: 8px;
+    }
 
-        /* ===============================
-           SIDEBAR
-        ===============================*/
-        section[data-testid="stSidebar"] {
-            background-color: #FFFFFF; /* white sidebar */
-            border-right: 1px solid #00FF9C;
-            color: #000000; /* black sidebar text */
-        }
+    /* ==============================
+       BODY TEXT
+    ============================== */
+    p, span, label, td {
+        font-size: 1.15rem !important;
+        font-weight: 500;
+        color: #0A1F44;
+    }
 
-        /* ===============================
-           INPUTS
-        ===============================*/
-        input, textarea, select {
-            background-color: #FFFFFF !important;
-            color: #000000 !important; /* input text black */
-            border-radius: 6px !important;
-            border: 1px solid #00FF9C !important;
-        }
+    /* ==============================
+       KPI CARDS
+    ============================== */
+    .kpi-card {
+        background-color: #FFB84D;
+        border-left: 6px solid #FF9C33;
+        border-radius: 16px;
+        padding: 22px;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        margin-bottom: 16px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
 
-        /* ===============================
-           BUTTONS
-        ===============================*/
-        button {
-            background: linear-gradient(135deg, #00FF9C, #00C8FF, #FFB347, #FFD700) !important;
-            color: #000000 !important; /* black text on buttons */
-            border-radius: 6px !important;
-            padding: 0.55em 1.4em !important;
-            font-weight: 700 !important;
-            border: none !important;
-            box-shadow: 0 0 8px rgba(0,255,156,0.3);
-            transition: all 0.2s ease-in-out;
-        }
-        button:hover {
-            box-shadow: 0 0 14px rgba(0,255,156,0.5);
-            transform: translateY(-1px);
-        }
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
 
-        /* ===============================
-           PAGE PADDING
-        ===============================*/
-        .block-container {
-            padding-top: 1.5rem;
-            padding-left: 2rem;
-            padding-right: 2rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    .kpi-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        color: #0A1F44;
+    }
+
+    .kpi-card h2 {
+        font-size: 2.8rem;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    /* ==============================
+       DATAFRAMES
+    ============================== */
+    .stDataFrame {
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        overflow: hidden;
+    }
+
+    .stDataFrame th {
+        background-color: #FF9C33;
+        color: white;
+        padding: 12px;
+        font-weight: 700;
+        font-size: 1.15rem;
+        text-align: center;
+    }
+
+    .stDataFrame td {
+        padding: 10px;
+        font-size: 1.1rem;
+    }
+
+    /* ==============================
+       SIDEBAR
+    ============================== */
+    section[data-testid="stSidebar"] {
+        background-color: #FFB84D;
+        border-right: 3px solid #FF9C33;
+        padding-top: 1rem;
+    }
+
+    section[data-testid="stSidebar"] * {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* ==============================
+       INPUTS / SELECT / TEXTAREA (Sidebar)
+    ============================== */
+    section[data-testid="stSidebar"] input, 
+    section[data-testid="stSidebar"] select, 
+    section[data-testid="stSidebar"] textarea {
+        font-size: 1.15rem !important;
+        padding: 0.6rem !important;
+        border-radius: 12px !important;
+        border: 1px solid #FFB84D !important;
+        color: white !important;           /* typed text white */
+        font-weight: 600 !important;
+    }
+
+    section[data-testid="stSidebar"] input::placeholder,
+    section[data-testid="stSidebar"] select::placeholder,
+    section[data-testid="stSidebar"] textarea::placeholder {
+        color: white !important;           /* placeholder white */
+        opacity: 1 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ==============================
+       BUTTONS
+    ============================== */
+    button {
+        background-color: #FFB84D !important;
+        color: #0A1F44 !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        padding: 0.65rem 1.25rem !important;
+        border: none !important;
+        font-size: 1.1rem !important;
+        transition: all 0.2s ease;
+    }
+
+    button:hover {
+        background-color: #FF9C33 !important;
+        transform: translateY(-2px);
+    }
+
+    /* ==============================
+       TOGGLE CHECKBOXES (Sidebar)
+    ============================== */
+    section[data-testid="stSidebar"] div[data-testid="stCheckbox"] > label {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        background-color: #FFB84D !important;
+        padding: 10px 14px !important;
+        border-radius: 16px !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stCheckbox"] input {
+        appearance: none !important;
+        width: 44px !important;
+        height: 24px !important;
+        background-color: #e6e6e6 !important;
+        border-radius: 999px !important;
+        position: relative !important;
+        cursor: pointer !important;
+        transition: background-color 0.25s ease !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stCheckbox"] input::before {
+        content: "" !important;
+        position: absolute !important;
+        width: 20px !important;
+        height: 20px !important;
+        top: 2px !important;
+        left: 2px !important;
+        background-color: white !important;
+        border-radius: 50% !important;
+        transition: transform 0.25s ease !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stCheckbox"] input:checked {
+        background-color: #FF9C33 !important;
+    }
+
+    section[data-testid="stSidebar"] div[data-testid="stCheckbox"] input:checked::before {
+        transform: translateX(20px) !important;
+    }
+
+    /* ==============================
+       PAGE PADDING
+    ============================== */
+    .block-container {
+        padding-top: 3.5rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
 
 
 def show_logo():
+    """Display Analytics BI logo centered, without expander icon"""
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
-    try:
-        img = Image.open(logo_path)
-        st.image(img, width=140)
-    except FileNotFoundError:
-        st.warning("Logo file not found in assets/logo.png")
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=180)
+    st.markdown("<div style='margin-bottom:1.5rem'></div>", unsafe_allow_html=True)
 
 
-def kpi_card(title, value, color="#00FF9C"):
+def kpi_card(title, value, color="#FFB84D"):
+    """Custom KPI card"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
-            <h4>{title}</h4>
+            <div class="kpi-title">{title}</div>
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
 
