@@ -10,7 +10,7 @@ import plotly.express as px
 import plotly.figure_factory as ff
 
 # -------------------------------
-# PAGE CONFIG & CUSTOM STYLE
+# PAGE CONFIG & STYLE
 # -------------------------------
 st.set_page_config(page_title="Alayticx BI", layout="wide")
 set_style()
@@ -27,6 +27,7 @@ defaults = {
     "show_kpis": True,
     "show_trends": True,
     "anonymize_data": False,
+    "sensitive_columns": ['Technician Name', 'Caller Name', 'Company Name'],
     "theme": "Light",
     "decimal_places": 1,
     "page": "Dashboard",
@@ -37,7 +38,7 @@ for key, val in defaults.items():
         st.session_state[key] = val
 
 # -------------------------------
-# FILE UPLOAD SECTION (ALWAYS VISIBLE)
+# FILE UPLOAD
 # -------------------------------
 st.markdown("## Analytics BI")
 uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
@@ -160,47 +161,32 @@ def filter_last_3_months(df):
 # PREPARE DATA FUNCTION
 # -------------------------------
 def prepare_data():
-    data = st.session_state.data
+    data = st.session_state.data.copy()
     data = clean_data(data)
     data = apply_universal_search(data)
     data = filter_last_3_months(data)
+    if st.session_state.anonymize_data and hasattr(st.session_state, 'sensitive_columns'):
+        data = anonymize(data, st.session_state.sensitive_columns)
     return data
 
 # -------------------------------
-# TOP NAVIGATION BAR
+# TOP NAVIGATION
 # -------------------------------
-# Google-style search bar
-st.markdown(
-    """
-    <style>
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .search-box { padding:5px; width:400px; border-radius:25px; border:1px solid #ccc; }
-    </style>
-    <div class="top-bar">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# Bind Streamlit input to session state
-st.session_state.universal_search = st.text_input(
-    "", value=st.session_state.get("universal_search",""),
-    placeholder="Search Technician, Caller, or Company",
-    key="search_input", label_visibility="collapsed"
-)
-
-# Top navigation buttons
 pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
+st.session_state.universal_search = st.text_input(
+    "Search Technician, Caller, or Company", value=st.session_state.universal_search
+)
+
 cols = st.columns(len(pages))
 for i, pg in enumerate(pages):
     if cols[i].button(pg):
         st.session_state.page = pg
 
-page = st.session_state.get("page", "Dashboard")
+page = st.session_state.page
 
-# -------------------------------
-# PAGE LOGIC
-# -------------------------------
+# =====================================================
+# DASHBOARD PAGE
+# =====================================================
 if page == "Dashboard":
     data = prepare_data()
     data, monthly_summary = calculate_monthly_summary(data)
@@ -215,22 +201,6 @@ if page == "Dashboard":
         c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
         c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
 
-elif page == "Advanced Analytics":
-    data = prepare_data()
-    data, monthly_summary = calculate_monthly_summary(data)
-    st.markdown("Advanced Analytics Page - Work in Progress")
-
-elif page == "Data Explorer":
-    data = prepare_data()
-    st.markdown("Data Explorer Page - Work in Progress")
-
-elif page == "Export Center":
-    data = prepare_data()
-    st.markdown("Export Center Page - Work in Progress")
-
-elif page == "Settings":
-    st.markdown("Settings Page - Work in Progress")
-# =====================================================
 # =====================================================
 # ADVANCED ANALYTICS PAGE
 # =====================================================
@@ -244,10 +214,12 @@ elif page == "Advanced Analytics":
     # SLA vs Duration Scatter
     st.markdown("## SLA vs Resolution Days")
     if 'Duration (days)' in data.columns and 'SLA TTO Done' in data.columns:
-        fig = px.scatter(data, x='Duration (days)', y='SLA TTO Done',
-                         color='Technician Name' if 'Technician Name' in data.columns else None,
-                         size='Done Tasks' if 'Done Tasks' in data.columns else None,
-                         hover_data=['Company Name'] if 'Company Name' in data.columns else None)
+        fig = px.scatter(
+            data, x='Duration (days)', y='SLA TTO Done',
+            color='Technician Name' if 'Technician Name' in data.columns else None,
+            size='Done Tasks' if 'Done Tasks' in data.columns else None,
+            hover_data=['Company Name'] if 'Company Name' in data.columns else None
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     # Technician SLA Heatmap
@@ -267,14 +239,7 @@ elif page == "Advanced Analytics":
             colorscale='YlOrRd',
             showscale=True,
             font_colors=['black'],
-            annotation_text=pivot.values,
-            hoverinfo='z'
-        )
-        fig_heat.update_layout(
-            xaxis=dict(tickangle=-60, tickfont=dict(size=9)),
-            yaxis=dict(tickfont=dict(size=8)),
-            margin=dict(l=200, r=50, t=50, b=150),
-            height=max(600, 30*len(pivot.index)),
+            annotation_text=pivot.values
         )
         fig_heat.update_yaxes(autorange="reversed")
         st.plotly_chart(fig_heat, use_container_width=True)
@@ -300,12 +265,10 @@ elif page == "Data Explorer":
     data, monthly_summary = calculate_monthly_summary(data)
 
     if data.empty:
-        st.warning("No data available for display.")
+        st.warning("No data available.")
         st.stop()
 
-    # -------------------------------
-    # KPI CARDS
-    # -------------------------------
+    # KPI Cards
     total_tickets = len(data)
     closed_tickets = data['Done Tasks'].sum() if 'Done Tasks' in data.columns else 0
     pending_tickets = data['Pending Tasks'].sum() if 'Pending Tasks' in data.columns else 0
@@ -319,27 +282,19 @@ elif page == "Data Explorer":
     c3.metric("Pending Tickets", pending_tickets)
     c4.metric("Avg SLA %", f"{avg_sla:.1f}%")
     c5.metric("Avg Resolution Days", f"{avg_duration:.1f}")
-    c6.metric("SLA Violations", (total_tickets - closed_tickets))
+    c6.metric("SLA Violations", total_tickets - closed_tickets)
 
-    # -------------------------------
-    # INLINE FILTERS
-    # -------------------------------
+    # Filters
     st.markdown("### Filters")
-    filter_cols = st.columns([1,1,1,1])
-    with filter_cols[0]:
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         companies = st.multiselect("Company", data['Company Name'].dropna().unique())
-    with filter_cols[1]:
+    with col2:
         techs = st.multiselect("Technician", data['Technician Name'].dropna().unique())
-    with filter_cols[2]:
+    with col3:
         callers = st.multiselect("Caller", data['Caller Name'].dropna().unique())
-    with filter_cols[3]:
-        status_options = ['All', 'Closed', 'Pending']
-        ticket_status = st.selectbox("Ticket Status", status_options, index=0)
-
-    # Date Range Filter
-    if 'Start date' in data.columns:
-        start_date, end_date = st.date_input("Date Range", [data['Start date'].min(), data['Start date'].max()])
-        data = data[(data['Start date'] >= pd.to_datetime(start_date)) & (data['Start date'] <= pd.to_datetime(end_date))]
+    with col4:
+        ticket_status = st.selectbox("Ticket Status", ['All', 'Closed', 'Pending'])
 
     # Apply filters
     if companies:
@@ -357,15 +312,12 @@ elif page == "Data Explorer":
         st.warning("No data matches your filters.")
         st.stop()
 
-    # -------------------------------
-    # INTERACTIVE CHARTS
-    # -------------------------------
+    # Charts
     st.markdown("### Ticket Status Distribution")
-    ticket_counts = {'Closed': closed_tickets, 'Pending': pending_tickets}
     fig_pie = px.pie(
-        names=list(ticket_counts.keys()),
-        values=list(ticket_counts.values()),
-        color=list(ticket_counts.keys()),
+        names=['Closed','Pending'],
+        values=[closed_tickets, pending_tickets],
+        color=['Closed','Pending'],
         color_discrete_map={'Closed':'green','Pending':'orange'},
         hole=0.3
     )
@@ -384,74 +336,25 @@ elif page == "Data Explorer":
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown("### Monthly SLA Trend")
-    if 'Month' in monthly_summary.columns and 'SLA %' in monthly_summary.columns:
-        fig_line = px.line(
-            monthly_summary.sort_values('Month'),
-            x='Month',
-            y='SLA %',
-            markers=True,
-            title="SLA % Trend Over Months"
-        )
-        st.plotly_chart(fig_line, use_container_width=True)
-
-    # -------------------------------
-    # PAGINATED TABLE
-    # -------------------------------
-    st.markdown("### Ticket Data Table")
-    rows_per_page = st.selectbox("Rows per page", [10, 25, 50, 100], index=1)
-    total_rows = len(data)
-    total_pages = (total_rows // rows_per_page) + (1 if total_rows % rows_per_page else 0)
-
-    page_number = st.number_input("Page number", min_value=1, max_value=total_pages, value=1)
-    start_idx = (page_number - 1) * rows_per_page
-    end_idx = start_idx + rows_per_page
-    table_to_show = data.iloc[start_idx:end_idx]
-
-    # Conditional formatting for SLA
-    if 'SLA %' in table_to_show.columns:
-        def sla_color(val):
-            if val >= 90: return 'color:green;font-weight:bold'
-            elif val >= 75: return 'color:orange;font-weight:bold'
-            else: return 'color:red;font-weight:bold'
-        st.dataframe(table_to_show.style.applymap(sla_color, subset=['SLA %']), use_container_width=True)
-    else:
-        st.dataframe(table_to_show, use_container_width=True)
-
-    # -------------------------------
-    # DOWNLOAD OPTIONS
-    # -------------------------------
-    st.markdown("### Download Filtered Data")
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        data.to_excel(writer, sheet_name='Filtered_Data', index=False)
-    st.download_button("Download Excel", output.getvalue(), "filtered_data.xlsx")
-
-    csv_output = data.to_csv(index=False).encode('utf-8')
-    st.download_button("Download CSV", csv_output, "filtered_data.csv", "text/csv")
-
 # =====================================================
 # EXPORT CENTER PAGE
 # =====================================================
 elif page == "Export Center":
     st.markdown('<h1 class="page-title">EXPORT CENTER</h1>', unsafe_allow_html=True)
-    st.markdown('<h4 class="page-subtitle">Download processed reports and presentations safely</h4>', unsafe_allow_html=True)
+    st.markdown('<h4 class="page-subtitle">Download processed reports and presentations</h4>', unsafe_allow_html=True)
 
     data = prepare_data()
     monthly_summary = st.session_state.get("monthly_summary", pd.DataFrame())
     tech_summary = st.session_state.get("tech_summary", pd.DataFrame())
     caller_summary = st.session_state.get("caller_summary", pd.DataFrame())
 
-    # Warn if all tables are empty
     if data.empty and monthly_summary.empty and (tech_summary.empty if tech_summary is not None else True) \
        and (caller_summary.empty if caller_summary is not None else True):
-        st.warning("⚠️ No data available to export. Please check your filters or upload a valid dataset.")
+        st.warning("No data to export.")
         st.stop()
 
-    # -----------------------
     # Excel Export
-    # -----------------------
-    st.markdown("## Download Excel Reports")
+    st.markdown("### Download Excel Reports")
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         if not data.empty:
@@ -464,16 +367,13 @@ elif page == "Export Center":
             caller_summary.to_excel(writer, sheet_name='Caller_Summary', index=False)
     st.download_button("Download Excel", output.getvalue(), "analytics_report.xlsx")
 
-    # -----------------------
     # PowerPoint Export
-    # -----------------------
-    st.markdown("## Download PowerPoint Presentation")
+    st.markdown("### Download PowerPoint Presentation")
     tables_dict = {
         'Monthly KPI': monthly_summary,
         'Technician-wise KPI': tech_summary,
         'Caller-wise KPI': caller_summary
     }
-
     try:
         prs = create_ppt(tables_dict)
         ppt_output = BytesIO()
@@ -481,7 +381,7 @@ elif page == "Export Center":
         ppt_output.seek(0)
         st.download_button("Download PowerPoint", ppt_output, "analytics_report.pptx")
     except Exception as e:
-        st.error(f"❌ Failed to generate PowerPoint: {str(e)}")
+        st.error(f"Failed to generate PowerPoint: {str(e)}")
 
 # =====================================================
 # SETTINGS PAGE
@@ -489,43 +389,52 @@ elif page == "Export Center":
 elif page == "Settings":
     st.markdown('<h1 class="page-title">SETTINGS</h1>', unsafe_allow_html=True)
     st.markdown('<h4 class="page-subtitle">Customize your dashboard preferences</h4>', unsafe_allow_html=True)
+    st.markdown("---")
 
     # Display Options
+    st.markdown("### Display Options")
     st.session_state.show_kpis = st.checkbox("Show KPI Cards", value=st.session_state.show_kpis)
     st.session_state.show_trends = st.checkbox("Show Monthly Trends", value=st.session_state.show_trends)
 
-    # Data Privacy & Anonymization
+    # Data Privacy
+    st.markdown("### Data Privacy")
     st.session_state.anonymize_data = st.checkbox("Anonymize Sensitive Data", value=st.session_state.anonymize_data)
     if st.session_state.anonymize_data and not st.session_state.data.empty:
         sensitive_columns = st.multiselect(
             "Select Columns to Anonymize",
-            options=st.session_state.data.columns,
-            default=['Technician Name','Caller Name','Company Name']
+            options=st.session_state.data.columns.tolist(),
+            default=st.session_state.sensitive_columns
         )
         st.session_state.sensitive_columns = sensitive_columns
 
     # Report Formatting
+    st.markdown("### Report Formatting")
     st.session_state.decimal_places = st.slider("Decimal Places in Reports", 0, 3, value=st.session_state.decimal_places)
 
-    # Theme & Appearance
-    theme_option = st.selectbox("Theme", ["Light", "Dark"], index=0 if st.session_state.theme=="Light" else 1)
+    # Theme
+    st.markdown("### Theme & Appearance")
+    theme_option = st.selectbox("Select Theme", ["Light", "Dark"], index=0 if st.session_state.theme=="Light" else 1)
     st.session_state.theme = theme_option
     st.markdown(f"**Current Theme:** {st.session_state.theme}")
 
-    # Reset & Apply Buttons
+    # Reset & Apply
+    st.markdown("---")
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Reset All Settings"):
-            st.session_state.show_kpis = True
-            st.session_state.show_trends = True
-            st.session_state.anonymize_data = False
-            st.session_state.sensitive_columns = []
-            st.session_state.decimal_places = 1
-            st.session_state.theme = "Light"
-            st.success("⚡ Settings reset to default.")
+            st.session_state.update({
+                "show_kpis": True,
+                "show_trends": True,
+                "anonymize_data": False,
+                "sensitive_columns": ['Technician Name', 'Caller Name', 'Company Name'],
+                "decimal_places": 1,
+                "theme": "Light"
+            })
+            st.success("Settings reset to default")
             st.experimental_rerun()
     with col2:
         if st.button("Apply Changes"):
-            st.success("✅ Settings applied successfully!")
+            st.success("Settings applied successfully")
             st.experimental_rerun()
+
 
