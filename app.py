@@ -231,6 +231,7 @@ elif page == "Export Center":
 elif page == "Settings":
     st.markdown("Settings Page - Work in Progress")
 # =====================================================
+# =====================================================
 # ADVANCED ANALYTICS PAGE
 # =====================================================
 elif page == "Advanced Analytics":
@@ -289,7 +290,7 @@ elif page == "Advanced Analytics":
         st.info("No numeric columns available for correlation analysis.")
 
 # =====================================================
-# DATA EXPLORER PAGE - IMPROVED
+# DATA EXPLORER PAGE
 # =====================================================
 elif page == "Data Explorer":
     st.markdown('<h1 class="page-title">DATA EXPLORER</h1>', unsafe_allow_html=True)
@@ -352,26 +353,15 @@ elif page == "Data Explorer":
     elif ticket_status == 'Pending':
         data = data[data['Pending Tasks'] > 0]
 
-    # -------------------------------
-    # SEARCH IN ANY COLUMN
-    # -------------------------------
-    search_text = st.text_input("Search keyword in any column")
-    if search_text:
-        mask = data.apply(lambda row: row.astype(str).str.contains(search_text, case=False, na=False).any(), axis=1)
-        data = data[mask]
-
     if data.empty:
-        st.warning("No data matches your filters/search.")
+        st.warning("No data matches your filters.")
         st.stop()
 
     # -------------------------------
     # INTERACTIVE CHARTS
     # -------------------------------
     st.markdown("### Ticket Status Distribution")
-    ticket_counts = {
-        'Closed': data['Done Tasks'].sum(),
-        'Pending': data['Pending Tasks'].sum()
-    }
+    ticket_counts = {'Closed': closed_tickets, 'Pending': pending_tickets}
     fig_pie = px.pie(
         names=list(ticket_counts.keys()),
         values=list(ticket_counts.values()),
@@ -484,7 +474,6 @@ elif page == "Export Center":
         'Caller-wise KPI': caller_summary
     }
 
-    from src.ppt_export import create_ppt  # make sure the updated create_ppt is used
     try:
         prs = create_ppt(tables_dict)
         ppt_output = BytesIO()
@@ -495,92 +484,36 @@ elif page == "Export Center":
         st.error(f"❌ Failed to generate PowerPoint: {str(e)}")
 
 # =====================================================
-# SETTINGS PAGE – IMPROVED
+# SETTINGS PAGE
 # =====================================================
 elif page == "Settings":
     st.markdown('<h1 class="page-title">SETTINGS</h1>', unsafe_allow_html=True)
     st.markdown('<h4 class="page-subtitle">Customize your dashboard preferences</h4>', unsafe_allow_html=True)
 
-    # -------------------------------
-    # DISPLAY OPTIONS
-    # -------------------------------
-    st.markdown("""
-    <div style="background-color:white; padding:15px; border-radius:10px; box-shadow:1px 1px 5px #ccc;">
-    <h3>Display Options</h3>
-    </div>
-    """, unsafe_allow_html=True)
+    # Display Options
+    st.session_state.show_kpis = st.checkbox("Show KPI Cards", value=st.session_state.show_kpis)
+    st.session_state.show_trends = st.checkbox("Show Monthly Trends", value=st.session_state.show_trends)
 
-    st.session_state.show_kpis = st.checkbox(
-        "Show KPI Cards", value=st.session_state.show_kpis,
-        help="Toggle to show or hide KPI cards on the dashboard."
-    )
-    st.session_state.show_trends = st.checkbox(
-        "Show Monthly Trends", value=st.session_state.show_trends,
-        help="Toggle to display trend charts for monthly performance."
-    )
+    # Data Privacy & Anonymization
+    st.session_state.anonymize_data = st.checkbox("Anonymize Sensitive Data", value=st.session_state.anonymize_data)
+    if st.session_state.anonymize_data and not st.session_state.data.empty:
+        sensitive_columns = st.multiselect(
+            "Select Columns to Anonymize",
+            options=st.session_state.data.columns,
+            default=['Technician Name','Caller Name','Company Name']
+        )
+        st.session_state.sensitive_columns = sensitive_columns
 
-    # -------------------------------
-    # DATA PRIVACY & ANONYMIZATION
-    # -------------------------------
-    st.markdown("""
-    <div style="background-color:white; padding:15px; border-radius:10px; box-shadow:1px 1px 5px #ccc; margin-top:10px;">
-    <h3>Data Privacy</h3>
-    </div>
-    """, unsafe_allow_html=True)
+    # Report Formatting
+    st.session_state.decimal_places = st.slider("Decimal Places in Reports", 0, 3, value=st.session_state.decimal_places)
 
-    st.session_state.anonymize_data = st.checkbox(
-        "Anonymize Sensitive Data", value=st.session_state.anonymize_data,
-        help="Enable to mask names and sensitive columns in the dashboard."
-    )
-
-    if st.session_state.anonymize_data:
-        if st.session_state.data.empty:
-            st.info("Upload data first to select columns for anonymization.")
-        else:
-            sensitive_columns = st.multiselect(
-                "Select Columns to Anonymize",
-                options=st.session_state.data.columns,
-                default=getattr(st.session_state, "sensitive_columns", ['Technician Name','Caller Name','Company Name']),
-                help="Choose which columns to anonymize when this option is enabled."
-            )
-            st.session_state.sensitive_columns = sensitive_columns
-
-    # -------------------------------
-    # REPORT FORMATTING
-    # -------------------------------
-    st.markdown("""
-    <div style="background-color:white; padding:15px; border-radius:10px; box-shadow:1px 1px 5px #ccc; margin-top:10px;">
-    <h3>Report Formatting</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.session_state.decimal_places = st.slider(
-        "Decimal Places in Reports", 0, 3, value=st.session_state.decimal_places,
-        help="Choose the number of decimal places displayed in KPIs and reports."
-    )
-
-    # -------------------------------
-    # THEME & APPEARANCE
-    # -------------------------------
-    st.markdown("""
-    <div style="background-color:white; padding:15px; border-radius:10px; box-shadow:1px 1px 5px #ccc; margin-top:10px;">
-    <h3>Theme & Appearance</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    theme_option = st.selectbox(
-        "Theme", ["Light", "Dark"], index=0 if st.session_state.theme == "Light" else 1,
-        help="Choose your dashboard theme. Light for bright view, Dark for low-light environments."
-    )
+    # Theme & Appearance
+    theme_option = st.selectbox("Theme", ["Light", "Dark"], index=0 if st.session_state.theme=="Light" else 1)
     st.session_state.theme = theme_option
-
     st.markdown(f"**Current Theme:** {st.session_state.theme}")
 
-    # -------------------------------
-    # RESET & APPLY BUTTONS
-    # -------------------------------
+    # Reset & Apply Buttons
     col1, col2 = st.columns(2)
-
     with col1:
         if st.button("Reset All Settings"):
             st.session_state.show_kpis = True
@@ -591,10 +524,8 @@ elif page == "Settings":
             st.session_state.theme = "Light"
             st.success("⚡ Settings reset to default.")
             st.experimental_rerun()
-
     with col2:
         if st.button("Apply Changes"):
             st.success("✅ Settings applied successfully!")
             st.experimental_rerun()
-
 
