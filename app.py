@@ -39,7 +39,7 @@ for key, val in defaults.items():
 # -------------------------------
 # FILE UPLOAD SECTION (ALWAYS VISIBLE)
 # -------------------------------
-st.markdown("## Upload Ticket Data")
+st.markdown("## Analytics BI")
 uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
@@ -177,9 +177,6 @@ st.markdown(
     .search-box { padding:5px; width:400px; border-radius:25px; border:1px solid #ccc; }
     </style>
     <div class="top-bar">
-        <div>
-            <h2>Alayticx BI</h2>
-        </div>
     </div>
     """,
     unsafe_allow_html=True
