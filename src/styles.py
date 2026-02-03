@@ -4,171 +4,170 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Elegant Hacker-Style Theme with Light Background"""
+    """Apply Hacker-style Neon Theme for Analytics BI"""
     st.markdown(
-        """
+        f"""
         <style>
-
         /* ===============================
-           GLOBAL BACKGROUND (OFF-WHITE)
+           GLOBAL BACKGROUND (NEON LIGHT)
         ===============================*/
-        .stApp {
-            background-color: #F5F5F5;  /* Soft off-white */
-            color: #1F2937;
+        .stApp {{
+            background-color: #EAFDFC;
+            color: #0F111A;
             font-family: 'Courier New', monospace;
-        }
+        }}
 
         /* ===============================
            HEADERS
         ===============================*/
-        h1, h2, h3, h4 {
-            color: #0FF; /* Neon cyan */
+        h1, h2, h3, h4 {{
+            color: #0F111A;
             font-weight: 600;
             font-family: 'Courier New', monospace;
-        }
+        }}
 
-        h1 {
-            border-bottom: 2px solid #39FF14; /* Neon green underline */
+        h1 {{
+            border-bottom: 2px solid #0FF;
             padding-bottom: 6px;
             margin-bottom: 20px;
-        }
+        }}
 
         /* ===============================
            DESCRIPTION TEXT
         ===============================*/
-        .stMarkdown p {
-            color: #4B5563; /* Soft gray text */
+        .stMarkdown p {{
+            color: #333333;
             font-size: 14px;
-        }
+        }}
 
         /* ===============================
            KPI CARDS
         ===============================*/
-        .kpi-card {
-            background-color: #FAFAFA; /* Slightly darker off-white for cards */
+        .kpi-card {{
+            background-color: #FFFFFF;
             border-radius: 12px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 6px 20px rgba(57,255,20,0.3);
-            border-left: 6px solid #39FF14;
+            box-shadow: 0 6px 20px rgba(0,255,255,0.4);
+            border-left: 6px solid #0FF;
             margin-bottom: 18px;
             transition: transform 0.2s ease-in-out;
-        }
+        }}
 
-        .kpi-card:hover {
+        .kpi-card:hover {{
             transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(57,255,20,0.5);
-        }
+            box-shadow: 0 8px 28px rgba(0,255,255,0.6);
+        }}
 
-        .kpi-card h4 {
+        .kpi-card h4 {{
             font-size: 13px;
-            color: #39FF14;
-            margin-bottom: 6px;
-        }
-
-        .kpi-card h2 {
-            font-size: 32px;
             color: #0FF;
+            margin-bottom: 6px;
+        }}
+
+        .kpi-card h2 {{
+            font-size: 32px;
+            color: #00CED1;
             margin: 0;
-            text-shadow: 0 0 4px #0FF;
-        }
+            text-shadow: 0 0 6px #00CED1;
+        }}
 
         /* ===============================
            DATAFRAMES
         ===============================*/
-        .stDataFrame {
-            background-color: #FAFAFA; /* Soft gray for tables */
+        .stDataFrame {{
+            background-color: #FFFFFF;
             border-radius: 10px;
             padding: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }}
 
-        .stDataFrame table {
+        .stDataFrame table {{
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #1F2937;
-        }
+            color: #0F111A;
+        }}
 
-        .stDataFrame th {
-            background-color: #E5F1FF; /* Light cyan header */
-            color: #0FF;
+        .stDataFrame th {{
+            background-color: #0FF;
+            color: #0F111A;
             padding: 10px;
             text-align: left;
             font-weight: 600;
-        }
+        }}
 
-        .stDataFrame td {
+        .stDataFrame td {{
             padding: 8px;
-            border-bottom: 1px solid #D1D5DB;
-        }
+            border-bottom: 1px solid #D0F0F0;
+        }}
 
-        .stDataFrame tr:nth-child(even) {
-            background-color: #F0F9FF; /* Soft alternating row */
-        }
+        .stDataFrame tr:nth-child(even) {{
+            background-color: #E0F7FA;
+        }}
 
-        .stDataFrame tr:hover {
-            background-color: #D0F0FF; /* Hover effect */
-        }
+        .stDataFrame tr:hover {{
+            background-color: #CFF8FA;
+        }}
 
         /* ===============================
            SIDEBAR
         ===============================*/
-        section[data-testid="stSidebar"] {
-            background-color: #EAEAEA;
-            border-right: 2px solid #39FF14;
-        }
+        section[data-testid="stSidebar"] {{
+            background-color: #FFFFFF;
+            border-right: 2px solid #0FF;
+        }}
 
         /* ===============================
            INPUTS
         ===============================*/
-        input, textarea, select {
-            background-color: #FFFFFF !important;
-            color: #1F2937 !important;
+        input, textarea, select {{
+            background-color: #F0FCFD !important;
+            color: #0F111A !important;
             border-radius: 6px !important;
-            border: 1px solid #39FF14 !important;
-        }
+            border: 1px solid #0FF !important;
+        }}
 
         /* ===============================
            BUTTONS
         ===============================*/
-        button {
-            background: linear-gradient(135deg, #0FF, #39FF14) !important;
-            color: #1F2937 !important;
+        button {{
+            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            color: #0F111A !important;
             border-radius: 8px !important;
             padding: 0.55em 1.4em !important;
             font-weight: 600 !important;
             border: none !important;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 0 6px #39FF14;
-        }
+            box-shadow: 0 0 6px #0FF;
+        }}
 
-        button:hover {
-            background: linear-gradient(135deg, #39FF14, #0FF) !important;
-            box-shadow: 0 0 12px #39FF14;
+        button:hover {{
+            background: linear-gradient(135deg, #00CED1, #0FF) !important;
+            box-shadow: 0 0 12px #0FF;
             transform: translateY(-1px);
-        }
+        }}
 
         /* ===============================
            DOWNLOAD BUTTONS
         ===============================*/
-        div.stDownloadButton > button {
-            background: linear-gradient(135deg, #0FF, #39FF14) !important;
-            color: #1F2937 !important;
-        }
+        div.stDownloadButton > button {{
+            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            color: #0F111A !important;
+        }}
 
-        div.stDownloadButton > button:hover {
-            background: linear-gradient(135deg, #39FF14, #0FF) !important;
-        }
+        div.stDownloadButton > button:hover {{
+            background: linear-gradient(135deg, #00CED1, #0FF) !important;
+        }}
 
         /* ===============================
            PAGE PADDING
         ===============================*/
-        .block-container {
+        .block-container {{
             padding-top: 1.5rem;
             padding-left: 2rem;
             padding-right: 2rem;
-        }
+        }}
 
         </style>
         """,
@@ -184,7 +183,7 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
-def kpi_card(title, value, color="#39FF14"):
+def kpi_card(title, value, color="#0FF"):
     """Hacker-style KPI card"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
