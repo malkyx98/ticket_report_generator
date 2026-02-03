@@ -33,7 +33,51 @@ defaults = {
 for key, val in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = val
+# -------------------------------
+# UNIVERSAL SEARCH BAR (Top of Page)
+# -------------------------------
+st.markdown(
+    """
+    <style>
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        width: 60%;
+        padding: 10px 20px;
+        border-radius: 25px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+    </style>
+    <div class="search-container">
+        <input class="search-box" placeholder="Search Technician, Caller, or Company" id="universal_search">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
+# Bind input to Streamlit session state
+search_input = st.text_input(
+    "", 
+    value=st.session_state.get("universal_search", ""), 
+    key="universal_search", 
+    placeholder="Search Technician, Caller, or Company", 
+    label_visibility="collapsed"
+)
+
+# Apply universal search
+def apply_universal_search(df):
+    search = st.session_state.get("universal_search", "")
+    if search:
+        mask = pd.Series(False, index=df.index)
+        for col in ['Company Name', 'Technician Name', 'Caller Name']:
+            if col in df.columns:
+                mask |= df[col].str.contains(search, case=False, na=False)
+        df = df[mask]
+    return df
 # -------------------------------
 # FILE UPLOAD
 # -------------------------------
