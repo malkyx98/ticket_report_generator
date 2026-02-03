@@ -4,39 +4,38 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Hacker-style Neon Theme for Analytics BI"""
+    """Apply Professional Blue Analytics Theme"""
     st.markdown(
         """
         <style>
         /* ===============================
-           GLOBAL BACKGROUND (SOFT CYBER BLUE)
+           GLOBAL BACKGROUND
         ===============================*/
         .stApp {
-            background-color: #E6F0FA; /* soft blue */
-            color: #0F111A;
-            font-family: 'Courier New', monospace;
+            background-color: #F4F7FB; /* soft blue-gray */
+            color: #1F2937;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
         }
 
         /* ===============================
            HEADERS
         ===============================*/
         h1, h2, h3, h4 {
-            color: #0F111A;
+            color: #1E3A8A; /* deep blue */
             font-weight: 600;
-            font-family: 'Courier New', monospace;
         }
 
         h1 {
-            border-bottom: 2px solid #0FF;
-            padding-bottom: 6px;
-            margin-bottom: 20px;
+            border-bottom: 3px solid #2563EB;
+            padding-bottom: 8px;
+            margin-bottom: 22px;
         }
 
         /* ===============================
-           DESCRIPTION TEXT
+           TEXT
         ===============================*/
         .stMarkdown p {
-            color: #2C2F36;
+            color: #374151;
             font-size: 14px;
         }
 
@@ -45,31 +44,30 @@ def set_style():
         ===============================*/
         .kpi-card {
             background-color: #FFFFFF;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 22px;
             text-align: center;
-            box-shadow: 0 6px 20px rgba(0,255,255,0.35);
-            border-left: 6px solid #0FF;
-            margin-bottom: 18px;
-            transition: transform 0.2s ease-in-out;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
+            border-left: 6px solid #2563EB;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .kpi-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 28px rgba(0,255,255,0.55);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.25);
         }
 
         .kpi-card h4 {
             font-size: 13px;
-            color: #009FA6;
+            color: #64748B;
             margin-bottom: 6px;
         }
 
         .kpi-card h2 {
-            font-size: 32px;
-            color: #00CED1;
+            font-size: 34px;
+            color: #1E40AF;
             margin: 0;
-            text-shadow: 0 0 6px rgba(0,206,209,0.6);
         }
 
         /* ===============================
@@ -77,21 +75,21 @@ def set_style():
         ===============================*/
         .stDataFrame {
             background-color: #FFFFFF;
-            border-radius: 10px;
-            padding: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
 
         .stDataFrame table {
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #0F111A;
+            color: #1F2937;
         }
 
         .stDataFrame th {
-            background-color: #D8F4F6;
-            color: #0F111A;
+            background-color: #E0E7FF;
+            color: #1E3A8A;
             padding: 10px;
             text-align: left;
             font-weight: 600;
@@ -99,52 +97,53 @@ def set_style():
 
         .stDataFrame td {
             padding: 8px;
-            border-bottom: 1px solid #D0E4F2;
+            border-bottom: 1px solid #E5E7EB;
         }
 
         .stDataFrame tr:nth-child(even) {
-            background-color: #F3F8FC;
+            background-color: #F8FAFC;
         }
 
         .stDataFrame tr:hover {
-            background-color: #E6F6FA;
+            background-color: #EEF2FF;
         }
 
         /* ===============================
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #F0F6FC;
-            border-right: 2px solid #0FF;
+            background-color: #FFFFFF;
+            border-right: 2px solid #2563EB;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.05);
         }
 
         /* ===============================
            INPUTS
         ===============================*/
         input, textarea, select {
-            background-color: #EEF6FB !important;
-            color: #0F111A !important;
-            border-radius: 6px !important;
-            border: 1px solid #0FF !important;
+            background-color: #FFFFFF !important;
+            color: #1F2937 !important;
+            border-radius: 8px !important;
+            border: 1px solid #CBD5E1 !important;
         }
 
         /* ===============================
            BUTTONS
         ===============================*/
         button {
-            background: linear-gradient(135deg, #0FF, #00CED1) !important;
-            color: #0F111A !important;
-            border-radius: 8px !important;
-            padding: 0.55em 1.4em !important;
+            background: linear-gradient(135deg, #2563EB, #1D4ED8) !important;
+            color: #FFFFFF !important;
+            border-radius: 10px !important;
+            padding: 0.6em 1.6em !important;
             font-weight: 600 !important;
             border: none !important;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 0 6px #0FF;
+            box-shadow: 0 6px 20px rgba(37,99,235,0.35);
         }
 
         button:hover {
-            background: linear-gradient(135deg, #00CED1, #0FF) !important;
-            box-shadow: 0 0 12px #0FF;
+            background: linear-gradient(135deg, #1D4ED8, #2563EB) !important;
+            box-shadow: 0 10px 30px rgba(37,99,235,0.45);
             transform: translateY(-1px);
         }
 
@@ -152,9 +151,9 @@ def set_style():
            PAGE PADDING
         ===============================*/
         .block-container {
-            padding-top: 1.5rem;
-            padding-left: 2rem;
-            padding-right: 2rem;
+            padding-top: 1.8rem;
+            padding-left: 2.2rem;
+            padding-right: 2.2rem;
         }
         </style>
         """,
@@ -169,10 +168,11 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
-def kpi_card(title, value, color="#0FF"):
+def kpi_card(title, value, color="#2563EB"):
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
