@@ -169,39 +169,21 @@ def prepare_data():
     return data
 
 # -------------------------------
-# TOP NAVIGATION BAR
+# TOP NAVIGATION BAR + SEARCH
 # -------------------------------
-# Google-style search bar
-st.markdown(
-    """
-    <style>
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .search-box { padding:5px; width:400px; border-radius:25px; border:1px solid #ccc; }
-    </style>
-    <div class="top-bar">
-        <div>
-            <h2>Alayticx BI</h2>
-        </div>
-        <div>
-            <input type="text" class="search-box" id="universal_search_html" placeholder="🔍 Search Technician, Caller, or Company">
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+cols = st.columns([1, 3, 1, 1, 1, 1])  # first column for logo/title
+cols[0].markdown("## Alayticx BI")
 
-# Bind Streamlit input to session state
-st.session_state.universal_search = st.text_input(
-    "", value=st.session_state.get("universal_search",""),
-    placeholder="Search Technician, Caller, or Company",
-    key="search_input", label_visibility="collapsed"
+# Google-style top search bar (single Streamlit input)
+st.session_state.universal_search = cols[1].text_input(
+    "🔍 Search Technician, Caller, or Company",
+    value=st.session_state.universal_search
 )
 
 # Top navigation buttons
 pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
-cols = st.columns(len(pages))
 for i, pg in enumerate(pages):
-    if cols[i].button(pg):
+    if cols[i+2].button(pg):
         st.session_state.page = pg
 
 page = st.session_state.get("page", "Dashboard")
@@ -210,24 +192,12 @@ page = st.session_state.get("page", "Dashboard")
 # PAGE LOGIC
 # -------------------------------
 if page == "Dashboard":
-    # Dashboard code
     data = prepare_data()
     data, monthly_summary = calculate_monthly_summary(data)
-
-    if st.session_state.show_kpis:
-        st.markdown("### Key Metrics")
-        c1,c2,c3,c4,c5,c6 = st.columns(6)
-        c1.metric("Total Tickets", int(monthly_summary['Total Tickets'].sum()))
-        c2.metric("Closed Tickets", int(monthly_summary['Closed Tickets'].sum()))
-        c3.metric("Pending Tickets", int(monthly_summary['Pending Tickets'].sum()))
-        c4.metric("SLA Violations", int(monthly_summary['SLA Violations'].sum()))
-        c5.metric("Closure %", f"{monthly_summary['Closure %'].mean():.1f}%")
-        c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
+    st.markdown("Dashboard Page - Work in Progress")
 
 elif page == "Advanced Analytics":
-    # Advanced Analytics code
     data = prepare_data()
-    data, monthly_summary = calculate_monthly_summary(data)
     st.markdown("Advanced Analytics Page - Work in Progress")
 
 elif page == "Data Explorer":
