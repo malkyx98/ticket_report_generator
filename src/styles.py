@@ -1,19 +1,18 @@
-# src/styles.py
 import streamlit as st
 from PIL import Image
 import os
 
 def set_style():
-    """Apply Dark Hacker / Cyber Security Theme with multiple accent colors"""
+    """Apply White Background Theme with Multiple Accent Colors"""
     st.markdown(
         """
         <style>
         /* ===============================
-           GLOBAL BACKGROUND (DARK TERMINAL)
+           GLOBAL BACKGROUND
         ===============================*/
         .stApp {
-            background-color: #0B0F14;
-            color: #C9D1D9;
+            background-color: #FFFFFF; /* white background */
+            color: #0B0F14; /* dark text for contrast */
             font-family: 'Courier New', monospace;
         }
 
@@ -21,13 +20,12 @@ def set_style():
            HEADERS
         ===============================*/
         h1, h2, h3, h4 {
-            color: #58F7C5;
+            color: #00C8FF; /* blue accent */
             font-weight: 600;
             font-family: 'Courier New', monospace;
         }
-
         h1 {
-            border-bottom: 2px solid #00FF9C; /* green */
+            border-bottom: 2px solid #00FF9C; /* green underline */
             padding-bottom: 6px;
             margin-bottom: 20px;
         }
@@ -36,29 +34,27 @@ def set_style():
            TEXT / PARAGRAPHS
         ===============================*/
         .stMarkdown p {
-            color: #9AA4AF;
+            color: #333333; /* dark grey for readability */
             font-size: 14px;
         }
 
         /* ===============================
-           KPI CARDS (GLASS TERMINAL STYLE)
+           KPI CARDS
         ===============================*/
         .kpi-card {
-            background: rgba(20, 25, 35, 0.9);
+            background: #F0F4F8; /* light glass effect */
             border-radius: 10px;
             padding: 18px;
             text-align: center;
             border-left: 4px solid #00FF9C; /* default green accent */
             margin-bottom: 16px;
-            box-shadow: 0 0 18px rgba(0,255,156,0.25);
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
             transition: transform 0.2s ease-in-out;
         }
-
         .kpi-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 28px rgba(0,255,156,0.45);
+            box-shadow: 0 0 18px rgba(0,255,156,0.25);
         }
-
         .kpi-card h4 {
             font-size: 12px;
             color: #FFB347; /* orange accent */
@@ -66,57 +62,50 @@ def set_style():
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         .kpi-card h2 {
             font-size: 30px;
             color: #FFD700; /* yellow accent */
             margin: 0;
-            text-shadow: 0 0 10px rgba(255,215,0,0.6);
+            text-shadow: 0 0 5px rgba(255,215,0,0.4);
         }
 
         /* ===============================
            DATAFRAMES
         ===============================*/
         .stDataFrame {
-            background-color: #0F141B;
+            background-color: #FFFFFF; /* white */
             border-radius: 8px;
             padding: 10px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.6);
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
         }
-
         .stDataFrame table {
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #C9D1D9;
+            color: #0B0F14;
         }
-
         .stDataFrame th {
             background-color: #00C8FF; /* blue accent */
-            color: #0B0F14;
+            color: #FFFFFF;
             padding: 10px;
-            text-align: left;
             font-weight: 700;
         }
-
         .stDataFrame td {
             padding: 8px;
-            border-bottom: 1px solid #1F2937;
+            border-bottom: 1px solid #E0E0E0;
         }
-
         .stDataFrame tr:nth-child(even) {
-            background-color: #0B1220;
+            background-color: #F7F9FA;
         }
-
         .stDataFrame tr:hover {
-            background-color: #12203A;
+            background-color: #E8F0FE;
         }
 
         /* ===============================
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #0F141B;
+            background-color: #F9FAFB;
             border-right: 1px solid #00FF9C;
         }
 
@@ -124,8 +113,8 @@ def set_style():
            INPUTS
         ===============================*/
         input, textarea, select {
-            background-color: #0B1220 !important;
-            color: #C9D1D9 !important;
+            background-color: #FFFFFF !important;
+            color: #0B0F14 !important;
             border-radius: 6px !important;
             border: 1px solid #00FF9C !important;
         }
@@ -140,12 +129,11 @@ def set_style():
             padding: 0.55em 1.4em !important;
             font-weight: 700 !important;
             border: none !important;
-            box-shadow: 0 0 10px rgba(0,255,156,0.5);
+            box-shadow: 0 0 8px rgba(0,255,156,0.3);
             transition: all 0.2s ease-in-out;
         }
-
         button:hover {
-            box-shadow: 0 0 18px rgba(0,255,156,0.8);
+            box-shadow: 0 0 14px rgba(0,255,156,0.5);
             transform: translateY(-1px);
         }
 
@@ -162,7 +150,9 @@ def set_style():
         unsafe_allow_html=True
     )
 
+
 def show_logo():
+    """Display a logo from assets folder"""
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
     try:
         img = Image.open(logo_path)
@@ -170,12 +160,15 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
+
 def kpi_card(title, value, color="#00FF9C"):
+    """KPI card with dynamic accent color"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
+
 
 
