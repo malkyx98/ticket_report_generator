@@ -1,4 +1,4 @@
-# app.py (Universal Data Analysis Tool)
+# app.py (Fully Dynamic Universal Analytics Tool)
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -11,7 +11,7 @@ from src.ppt_export import create_ppt
 # -------------------------------
 # PAGE CONFIG & STYLE
 # -------------------------------
-st.set_page_config(page_title="Universal Analytics BI", layout="wide")
+st.set_page_config(page_title="Analytics BI", layout="wide")
 set_style()
 show_logo()
 
@@ -21,7 +21,6 @@ show_logo()
 defaults = {
     "data": pd.DataFrame(),
     "processed_data": pd.DataFrame(),
-    "kpi_columns": {},
     "show_kpis": True,
     "show_trends": True,
     "anonymize_data": False,
@@ -38,7 +37,7 @@ for key, val in defaults.items():
 # -------------------------------
 # FILE UPLOAD
 # -------------------------------
-st.markdown("## Universal Analytics BI")
+st.markdown("## Analytics BI")
 uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
@@ -50,32 +49,11 @@ elif st.session_state.data.empty:
     st.stop()
 
 # -------------------------------
-# UNIVERSAL COLUMN MAPPING
+# UNIVERSAL SEARCH
 # -------------------------------
-st.markdown("### Map Your Columns for Analysis")
-data_columns = st.session_state.data.columns.tolist()
-
-with st.expander("Column Mapping (optional)"):
-    date_col = st.selectbox("Select Date Column (optional)", [None]+data_columns)
-    category_col = st.selectbox("Select Category Column (optional)", [None]+data_columns)
-    subcategory_col = st.selectbox("Select Subcategory Column (optional)", [None]+data_columns)
-    numeric_cols = st.multiselect("Select Numeric Columns for KPIs", data_columns)
-
-st.session_state.kpi_columns = {
-    "date": date_col,
-    "category": category_col,
-    "subcategory": subcategory_col,
-    "numeric": numeric_cols
-}
-
-# -------------------------------
-# DATA PREPARATION
-# -------------------------------
-def anonymize(df, columns):
-    for col in columns:
-        if col in df.columns:
-            df[col] = [f"{col}_{i+1}" for i in range(len(df))]
-    return df
+st.session_state.universal_search = st.text_input(
+    "Search Text Across All Columns", value=st.session_state.universal_search
+)
 
 def apply_universal_search(df):
     search = st.session_state.get("universal_search", "")
@@ -86,25 +64,24 @@ def apply_universal_search(df):
         df = df[mask]
     return df
 
-def filter_last_3_months(df, date_col):
-    if date_col and date_col in df.columns:
-        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-        today = pd.Timestamp.today()
-        three_months_ago = today - pd.DateOffset(months=3)
-        df = df[df[date_col] >= three_months_ago]
+# -------------------------------
+# DATA ANONYMIZATION
+# -------------------------------
+def anonymize(df, columns):
+    for col in columns:
+        if col in df.columns:
+            df[col] = [f"{col}_{i+1}" for i in range(len(df))]
     return df
 
+# -------------------------------
+# DATA PREPARATION
+# -------------------------------
 def prepare_data():
     df = st.session_state.data.copy()
     df = apply_universal_search(df)
-    df = filter_last_3_months(df, st.session_state.kpi_columns.get("date"))
     if st.session_state.anonymize_data:
         df = anonymize(df, st.session_state.sensitive_columns)
     return df
-
-st.session_state.universal_search = st.text_input(
-    "Search Text Across All Columns", value=st.session_state.universal_search
-)
 
 # -------------------------------
 # TOP NAVIGATION
@@ -116,60 +93,74 @@ for i, pg in enumerate(pages):
         st.session_state.page = pg
 
 page = st.session_state.page
+df = prepare_data()
 
 # -------------------------------
 # DASHBOARD PAGE
 # -------------------------------
 if page == "Dashboard":
-    df = prepare_data()
-
-    st.markdown("### Key Metrics")
-    c1, c2, c3, c4 = st.columns(4)
-    total_records = len(df)
-    total_numeric_sum = sum([df[col].sum() for col in st.session_state.kpi_columns.get("numeric", []) if col in df.columns])
-    avg_numeric = np.mean([df[col].mean() for col in st.session_state.kpi_columns.get("numeric", []) if col in df.columns])
-    c1.metric("Total Records", total_records)
-    c2.metric("Sum of Numerics", total_numeric_sum)
-    c3.metric("Average of Numerics", f"{avg_numeric:.{st.session_state.decimal_places}f}")
-    c4.metric("Columns Analyzed", len(st.session_state.kpi_columns.get("numeric", [])))
+    st.markdown("### Key Metrics (Dynamic KPIs)")
+    numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+    if numeric_cols:
+        kpi_cols = numeric_cols[:6]  # show up to 6 numeric columns
+        cols_ui = st.columns(len(kpi_cols))
+        for i, col_name in enumerate(kpi_cols):
+            cols_ui[i].metric(
+                label=f"{col_name} (Sum)",
+                value=f"{df[col_name].sum():.{st.session_state.decimal_places}f}"
+            )
+    else:
+        st.info("No numeric columns available for KPI display.")
 
 # -------------------------------
 # ADVANCED ANALYTICS PAGE
 # -------------------------------
 elif page == "Advanced Analytics":
-    df = prepare_data()
-
-    st.markdown("### Numeric Column Correlation")
-    numeric_cols = st.session_state.kpi_columns.get("numeric", [])
-    numeric_cols = [col for col in numeric_cols if col in df.columns]
+    st.markdown("### Numeric Column Correlation (Dynamic)")
+    numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
     if numeric_cols:
         corr = df[numeric_cols].corr()
         fig_corr = px.imshow(corr, text_auto=True, color_continuous_scale='RdBu_r')
         st.plotly_chart(fig_corr, use_container_width=True)
     else:
-        st.info("No numeric columns selected for correlation.")
+        st.info("No numeric columns available for correlation.")
 
     st.markdown("### Category Trends")
-    category_col = st.session_state.kpi_columns.get("category")
-    date_col = st.session_state.kpi_columns.get("date")
-    if category_col and category_col in df.columns and date_col and date_col in df.columns:
+    text_cols = df.select_dtypes(include="object").columns.tolist()
+    category_col = st.selectbox("Choose Category Column", options=[None]+text_cols)
+    numeric_col = st.selectbox("Choose Numeric Column for Trends", options=[None]+numeric_cols)
+    date_cols = df.select_dtypes(include="datetime").columns.tolist()
+    date_col = st.selectbox("Choose Date Column (optional)", options=[None]+date_cols)
+
+    if category_col and numeric_col:
+        agg_df = df.groupby(category_col)[numeric_col].sum().reset_index()
+        fig_bar = px.bar(agg_df, x=category_col, y=numeric_col, color=numeric_col, text=numeric_col)
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+    if date_col and category_col and numeric_col:
         df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-        trend = df.groupby([pd.Grouper(key=date_col, freq='M'), category_col]).size().reset_index(name="Count")
-        fig_trend = px.line(trend, x=date_col, y="Count", color=category_col)
+        trend_df = df.groupby([pd.Grouper(key=date_col, freq='M'), category_col])[numeric_col].sum().reset_index()
+        fig_trend = px.line(trend_df, x=date_col, y=numeric_col, color=category_col)
         st.plotly_chart(fig_trend, use_container_width=True)
 
 # -------------------------------
 # DATA EXPLORER PAGE
 # -------------------------------
 elif page == "Data Explorer":
-    df = prepare_data()
+    st.markdown("### Explore Your Data")
+    # Dynamic filters for all text columns
+    text_cols = df.select_dtypes(include="object").columns.tolist()
+    for col in text_cols:
+        unique_vals = df[col].dropna().unique().tolist()
+        selected = st.multiselect(f"Filter {col}", unique_vals)
+        if selected:
+            df = df[df[col].isin(selected)]
     st.dataframe(df, use_container_width=True)
 
 # -------------------------------
 # EXPORT CENTER PAGE
 # -------------------------------
 elif page == "Export Center":
-    df = prepare_data()
     if df.empty:
         st.warning("No data to export.")
         st.stop()
