@@ -3,22 +3,25 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from io import BytesIO
+from PIL import Image
 from src.styles import set_style, show_logo, kpi_card
 from src.data_processing import clean_name, compute_kpis
 from src.ppt_export import create_ppt
 import plotly.express as px
 import plotly.figure_factory as ff
 
-# -------------------------------
-# PAGE CONFIG & STYLE
-# -------------------------------
-st.set_page_config(page_title="Alayticx BI", layout="wide")
-set_style()
-show_logo()
+# -----------------------------
+# PAGE CONFIG
+# -----------------------------
+st.set_page_config(
+    page_title="Alayticx BI",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-# -------------------------------
+# -----------------------------
 # SESSION STATE DEFAULTS
-# -------------------------------
+# -----------------------------
 defaults = {
     "data": pd.DataFrame(),
     "monthly_summary": pd.DataFrame(),
@@ -36,38 +39,52 @@ for key, val in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = val
 
-# -------------------------------
-# TOP NAVIGATION BAR (FULL WIDTH)
-# -------------------------------
-nav_col1, nav_col2, nav_col3 = st.columns([1, 4, 5])
+# -----------------------------
+# LOAD LOGO
+# -----------------------------
+# Replace 'logo.png' with your actual logo path
+logo = Image.open("logo.png")
 
-# Logo / Title
-with nav_col1:
-    st.markdown('<h2 style="color:#0B5394; margin:0;">Alayticx BI</h2>', unsafe_allow_html=True)
+# -----------------------------
+# TOP NAVBAR
+# -----------------------------
+col_logo, col_search, col_nav = st.columns([1, 3, 3])
 
-# Universal search bar (center)
-with nav_col2:
+# Logo + App Name
+with col_logo:
+    st.image(logo, width=70)
+    st.markdown(
+        '<h2 style="color:#0B5394; display:inline; margin-left:10px; font-family:sans-serif;">Alayticx BI</h2>',
+        unsafe_allow_html=True
+    )
+
+# Universal Search Bar
+with col_search:
     st.session_state.universal_search = st.text_input(
         "🔍 Search Technician, Caller, or Company",
         value=st.session_state.universal_search,
-        key="top_search"
+        key="top_search",
+        placeholder="Type to search...",
+        help="Search across Technician, Caller, or Company"
     )
 
-# Navigation buttons (right-aligned)
+# Navigation Buttons
 pages = ["Dashboard", "Advanced Analytics", "Data Explorer", "Export Center", "Settings"]
-with nav_col3:
+with col_nav:
     btn_cols = st.columns(len(pages))
     for i, pg in enumerate(pages):
         if btn_cols[i].button(pg):
             st.session_state.page = pg
 
-st.markdown("""<hr style="border:2px solid #0B5394">""", unsafe_allow_html=True)  # separator
+# Horizontal Separator
+st.markdown(
+    '<hr style="border:2px solid #0B5394; margin-top:10px; margin-bottom:20px;">',
+    unsafe_allow_html=True
+)
 
-page = st.session_state.get("page", "Dashboard")
-
-# -------------------------------
-# FILE UPLOAD FUNCTION
-# -------------------------------
+# -----------------------------
+# HELPER FUNCTIONS
+# -----------------------------
 def upload_file():
     st.markdown("## Upload Ticket Data")
     uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
@@ -81,16 +98,19 @@ def upload_file():
         st.info("Please upload an Excel file to continue.")
         st.stop()
 
-# -------------------------------
-# DATA FUNCTIONS
-# -------------------------------
 def clean_data(df):
-    if 'Organization->Name' in df.columns: df['Company Name'] = clean_name(df, 'Organization->Name')
-    else: df['Company Name'] = ""
-    if 'Agent->Full name' in df.columns: df['Technician Name'] = clean_name(df, 'Agent->Full name')
-    else: df['Technician Name'] = ""
-    if 'Caller->Full name' in df.columns: df['Caller Name'] = clean_name(df, 'Caller->Full name')
-    else: df['Caller Name'] = ""
+    if 'Organization->Name' in df.columns: 
+        df['Company Name'] = clean_name(df, 'Organization->Name')
+    else: 
+        df['Company Name'] = ""
+    if 'Agent->Full name' in df.columns: 
+        df['Technician Name'] = clean_name(df, 'Agent->Full name')
+    else: 
+        df['Technician Name'] = ""
+    if 'Caller->Full name' in df.columns: 
+        df['Caller Name'] = clean_name(df, 'Caller->Full name')
+    else: 
+        df['Caller Name'] = ""
     return df
 
 def anonymize(df, columns):
@@ -122,9 +142,13 @@ def prepare_data():
     data = filter_last_3_months(data)
     return data
 
-# -------------------------------
+# -----------------------------
 # PAGE CONTENT
-# -------------------------------
+# -----------------------------
+page = st.session_state.get("page", "Dashboard")
+st.markdown(f"## 🏠 {page}")
+st.markdown("---")
+
 if page == "Dashboard":
     st.markdown('<h1 style="color:#0B5394;">📊 Dashboard Overview</h1>', unsafe_allow_html=True)
     st.markdown('<p>Real-time BI insights at a glance</p>', unsafe_allow_html=True)
@@ -150,5 +174,4 @@ elif page == "Export Center":
 elif page == "Settings":
     st.markdown('<h1 style="color:#0B5394;">⚙️ Settings</h1>', unsafe_allow_html=True)
     st.markdown("Settings content goes here...", unsafe_allow_html=True)
-
 
