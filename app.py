@@ -37,20 +37,18 @@ for key, val in defaults.items():
         st.session_state[key] = val
 
 # -------------------------------
-# FILE UPLOAD FUNCTION
+# FILE UPLOAD SECTION (ALWAYS VISIBLE)
 # -------------------------------
-def upload_file():
-    st.markdown("## Upload Ticket Data")
-    uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file)
-        st.session_state.data = df.copy()
-        with st.expander("Preview Uploaded Data"):
-            st.dataframe(df.head(), use_container_width=True)
-        return df
-    else:
-        st.info("Please upload an Excel file to continue.")
-        st.stop()
+st.markdown("## Upload Ticket Data")
+uploaded_file = st.file_uploader("Upload Excel file (.xlsx)", type="xlsx")
+if uploaded_file:
+    df = pd.read_excel(uploaded_file)
+    st.session_state.data = df.copy()
+    with st.expander("Preview Uploaded Data"):
+        st.dataframe(df.head(), use_container_width=True)
+elif st.session_state.data.empty:
+    st.info("Please upload an Excel file to continue.")
+    st.stop()
 
 # -------------------------------
 # DATA CLEANING & ANONYMIZATION
@@ -162,7 +160,7 @@ def filter_last_3_months(df):
 # PREPARE DATA FUNCTION
 # -------------------------------
 def prepare_data():
-    data = st.session_state.data if not st.session_state.data.empty else upload_file()
+    data = st.session_state.data
     data = clean_data(data)
     data = apply_universal_search(data)
     data = filter_last_3_months(data)
@@ -210,7 +208,6 @@ page = st.session_state.get("page", "Dashboard")
 # PAGE LOGIC
 # -------------------------------
 if page == "Dashboard":
-    # Dashboard code
     data = prepare_data()
     data, monthly_summary = calculate_monthly_summary(data)
 
@@ -225,7 +222,6 @@ if page == "Dashboard":
         c6.metric("SLA Compliance %", f"{monthly_summary['SLA %'].mean():.1f}%")
 
 elif page == "Advanced Analytics":
-    # Advanced Analytics code
     data = prepare_data()
     data, monthly_summary = calculate_monthly_summary(data)
     st.markdown("Advanced Analytics Page - Work in Progress")
@@ -240,4 +236,5 @@ elif page == "Export Center":
 
 elif page == "Settings":
     st.markdown("Settings Page - Work in Progress")
+
 
