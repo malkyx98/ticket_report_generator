@@ -269,7 +269,14 @@ elif page == "Advanced Analytics":
             colorscale='YlOrRd',
             showscale=True,
             font_colors=['black'],
-            annotation_text=pivot.values
+            annotation_text=pivot.values,
+            hoverinfo='z'
+        )
+        fig_heat.update_layout(
+            xaxis=dict(tickangle=-60, tickfont=dict(size=9)),
+            yaxis=dict(tickfont=dict(size=8)),
+            margin=dict(l=200, r=50, t=50, b=150),
+            height=max(600, 30*len(pivot.index)),
         )
         fig_heat.update_yaxes(autorange="reversed")
         st.plotly_chart(fig_heat, use_container_width=True)
