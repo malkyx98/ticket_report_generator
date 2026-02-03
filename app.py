@@ -180,9 +180,6 @@ st.markdown(
         <div>
             <h2>Alayticx BI</h2>
         </div>
-        <div>
-            <input type="text" class="search-box" id="universal_search_html" placeholder="🔍 Search Technician, Caller, or Company">
-        </div>
     </div>
     """,
     unsafe_allow_html=True
