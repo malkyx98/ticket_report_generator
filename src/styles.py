@@ -4,163 +4,178 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply Professional Blue Analytics Theme"""
+    """Apply Hacker-style Neon Theme for Analytics BI"""
     st.markdown(
-        """
+        f"""
         <style>
         /* ===============================
-           GLOBAL BACKGROUND
+           GLOBAL BACKGROUND (NEON LIGHT)
         ===============================*/
-        .stApp {
-            background-color: #F4F7FB; /* soft blue-gray */
-            color: #1F2937;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-        }
+        .stApp {{
+            background-color: #EAFDFC;
+            color: #0F111A;
+            font-family: 'Courier New', monospace;
+        }}
 
         /* ===============================
            HEADERS
         ===============================*/
-        h1, h2, h3, h4 {
-            color: #1E3A8A; /* deep blue */
+        h1, h2, h3, h4 {{
+            color: #0F111A;
             font-weight: 600;
-        }
+            font-family: 'Courier New', monospace;
+        }}
 
-        h1 {
-            border-bottom: 3px solid #2563EB;
-            padding-bottom: 8px;
-            margin-bottom: 22px;
-        }
+        h1 {{
+            border-bottom: 2px solid #0FF;
+            padding-bottom: 6px;
+            margin-bottom: 20px;
+        }}
 
         /* ===============================
-           TEXT
+           DESCRIPTION TEXT
         ===============================*/
-        .stMarkdown p {
-            color: #374151;
+        .stMarkdown p {{
+            color: #333333;
             font-size: 14px;
-        }
+        }}
 
         /* ===============================
            KPI CARDS
         ===============================*/
-        .kpi-card {
+        .kpi-card {{
             background-color: #FFFFFF;
-            border-radius: 14px;
-            padding: 22px;
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
-            border-left: 6px solid #2563EB;
-            margin-bottom: 20px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+            box-shadow: 0 6px 20px rgba(0,255,255,0.4);
+            border-left: 6px solid #0FF;
+            margin-bottom: 18px;
+            transition: transform 0.2s ease-in-out;
+        }}
 
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.25);
-        }
+        .kpi-card:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(0,255,255,0.6);
+        }}
 
-        .kpi-card h4 {
+        .kpi-card h4 {{
             font-size: 13px;
-            color: #64748B;
+            color: #0FF;
             margin-bottom: 6px;
-        }
+        }}
 
-        .kpi-card h2 {
-            font-size: 34px;
-            color: #1E40AF;
+        .kpi-card h2 {{
+            font-size: 32px;
+            color: #00CED1;
             margin: 0;
-        }
+            text-shadow: 0 0 6px #00CED1;
+        }}
 
         /* ===============================
            DATAFRAMES
         ===============================*/
-        .stDataFrame {
+        .stDataFrame {{
             background-color: #FFFFFF;
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        }
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }}
 
-        .stDataFrame table {
+        .stDataFrame table {{
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #1F2937;
-        }
+            color: #0F111A;
+        }}
 
-        .stDataFrame th {
-            background-color: #E0E7FF;
-            color: #1E3A8A;
+        .stDataFrame th {{
+            background-color: #0FF;
+            color: #0F111A;
             padding: 10px;
             text-align: left;
             font-weight: 600;
-        }
+        }}
 
-        .stDataFrame td {
+        .stDataFrame td {{
             padding: 8px;
-            border-bottom: 1px solid #E5E7EB;
-        }
+            border-bottom: 1px solid #D0F0F0;
+        }}
 
-        .stDataFrame tr:nth-child(even) {
-            background-color: #F8FAFC;
-        }
+        .stDataFrame tr:nth-child(even) {{
+            background-color: #E0F7FA;
+        }}
 
-        .stDataFrame tr:hover {
-            background-color: #EEF2FF;
-        }
+        .stDataFrame tr:hover {{
+            background-color: #CFF8FA;
+        }}
 
         /* ===============================
            SIDEBAR
         ===============================*/
-        section[data-testid="stSidebar"] {
+        section[data-testid="stSidebar"] {{
             background-color: #FFFFFF;
-            border-right: 2px solid #2563EB;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.05);
-        }
+            border-right: 2px solid #0FF;
+        }}
 
         /* ===============================
            INPUTS
         ===============================*/
-        input, textarea, select {
-            background-color: #FFFFFF !important;
-            color: #1F2937 !important;
-            border-radius: 8px !important;
-            border: 1px solid #CBD5E1 !important;
-        }
+        input, textarea, select {{
+            background-color: #F0FCFD !important;
+            color: #0F111A !important;
+            border-radius: 6px !important;
+            border: 1px solid #0FF !important;
+        }}
 
         /* ===============================
            BUTTONS
         ===============================*/
-        button {
-            background: linear-gradient(135deg, #2563EB, #1D4ED8) !important;
-            color: #FFFFFF !important;
-            border-radius: 10px !important;
-            padding: 0.6em 1.6em !important;
+        button {{
+            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            color: #0F111A !important;
+            border-radius: 8px !important;
+            padding: 0.55em 1.4em !important;
             font-weight: 600 !important;
             border: none !important;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 6px 20px rgba(37,99,235,0.35);
-        }
+            box-shadow: 0 0 6px #0FF;
+        }}
 
-        button:hover {
-            background: linear-gradient(135deg, #1D4ED8, #2563EB) !important;
-            box-shadow: 0 10px 30px rgba(37,99,235,0.45);
+        button:hover {{
+            background: linear-gradient(135deg, #00CED1, #0FF) !important;
+            box-shadow: 0 0 12px #0FF;
             transform: translateY(-1px);
-        }
+        }}
+
+        /* ===============================
+           DOWNLOAD BUTTONS
+        ===============================*/
+        div.stDownloadButton > button {{
+            background: linear-gradient(135deg, #0FF, #00CED1) !important;
+            color: #0F111A !important;
+        }}
+
+        div.stDownloadButton > button:hover {{
+            background: linear-gradient(135deg, #00CED1, #0FF) !important;
+        }}
 
         /* ===============================
            PAGE PADDING
         ===============================*/
-        .block-container {
-            padding-top: 1.8rem;
-            padding-left: 2.2rem;
-            padding-right: 2.2rem;
-        }
+        .block-container {{
+            padding-top: 1.5rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }}
+
         </style>
         """,
         unsafe_allow_html=True
     )
 
 def show_logo():
+    """Display a logo from assets folder"""
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
     try:
         img = Image.open(logo_path)
@@ -168,7 +183,8 @@ def show_logo():
     except FileNotFoundError:
         st.warning("Logo file not found in assets/logo.png")
 
-def kpi_card(title, value, color="#2563EB"):
+def kpi_card(title, value, color="#0FF"):
+    """Hacker-style KPI card"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
