@@ -52,9 +52,6 @@ st.markdown(
         font-size: 16px;
     }
     </style>
-    <div class="search-container">
-        <input class="search-box" placeholder="Search Technician, Caller, or Company" id="universal_search">
-    </div>
     """,
     unsafe_allow_html=True
 )
