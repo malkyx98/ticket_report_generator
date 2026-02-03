@@ -3,7 +3,7 @@ from PIL import Image
 import os
 
 def set_style():
-    """Apply White Background Theme (all previous dark backgrounds changed to white)"""
+    """Apply White Background Theme with All Black Text"""
     st.markdown(
         """
         <style>
@@ -11,8 +11,8 @@ def set_style():
            GLOBAL BACKGROUND
         ===============================*/
         .stApp {
-            background-color: #FFFFFF; /* white background instead of black */
-            color: #0B0F14; /* dark text for contrast */
+            background-color: #FFFFFF; /* white background */
+            color: #000000; /* all text black */
             font-family: 'Courier New', monospace;
         }
 
@@ -20,7 +20,7 @@ def set_style():
            HEADERS
         ===============================*/
         h1, h2, h3, h4 {
-            color: #00C8FF; /* blue accent */
+            color: #000000; /* headers black */
             font-weight: 600;
             font-family: 'Courier New', monospace;
         }
@@ -34,7 +34,7 @@ def set_style():
            TEXT / PARAGRAPHS
         ===============================*/
         .stMarkdown p {
-            color: #333333;
+            color: #000000; /* paragraphs black */
             font-size: 14px;
         }
 
@@ -42,7 +42,7 @@ def set_style():
            KPI CARDS
         ===============================*/
         .kpi-card {
-            background: #FFFFFF; /* white background instead of dark glass */
+            background: #FFFFFF; /* white card */
             border-radius: 10px;
             padding: 18px;
             text-align: center;
@@ -57,23 +57,23 @@ def set_style():
         }
         .kpi-card h4 {
             font-size: 12px;
-            color: #FFB347;
+            color: #000000; /* black text */
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .kpi-card h2 {
             font-size: 30px;
-            color: #FFD700;
+            color: #000000; /* black text */
             margin: 0;
-            text-shadow: 0 0 5px rgba(255,215,0,0.4);
+            text-shadow: none;
         }
 
         /* ===============================
            DATAFRAMES
         ===============================*/
         .stDataFrame {
-            background-color: #FFFFFF; /* white background */
+            background-color: #FFFFFF; /* white */
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 0 8px rgba(0,0,0,0.05);
@@ -82,11 +82,11 @@ def set_style():
             border-collapse: collapse;
             width: 100%;
             font-size: 13px;
-            color: #0B0F14;
+            color: #000000; /* all text black */
         }
         .stDataFrame th {
-            background-color: #00C8FF;
-            color: #FFFFFF;
+            background-color: #00C8FF; /* blue accent */
+            color: #000000; /* black header text */
             padding: 10px;
             font-weight: 700;
         }
@@ -105,8 +105,9 @@ def set_style():
            SIDEBAR
         ===============================*/
         section[data-testid="stSidebar"] {
-            background-color: #FFFFFF; /* white sidebar instead of black */
+            background-color: #FFFFFF; /* white sidebar */
             border-right: 1px solid #00FF9C;
+            color: #000000; /* black sidebar text */
         }
 
         /* ===============================
@@ -114,7 +115,7 @@ def set_style():
         ===============================*/
         input, textarea, select {
             background-color: #FFFFFF !important;
-            color: #0B0F14 !important;
+            color: #000000 !important; /* input text black */
             border-radius: 6px !important;
             border: 1px solid #00FF9C !important;
         }
@@ -124,7 +125,7 @@ def set_style():
         ===============================*/
         button {
             background: linear-gradient(135deg, #00FF9C, #00C8FF, #FFB347, #FFD700) !important;
-            color: #0B0F14 !important;
+            color: #000000 !important; /* black text on buttons */
             border-radius: 6px !important;
             padding: 0.55em 1.4em !important;
             font-weight: 700 !important;
@@ -152,7 +153,6 @@ def set_style():
 
 
 def show_logo():
-    """Display a logo from assets folder"""
     logo_path = os.path.join(os.getcwd(), "assets", "logo.png")
     try:
         img = Image.open(logo_path)
@@ -162,12 +162,10 @@ def show_logo():
 
 
 def kpi_card(title, value, color="#00FF9C"):
-    """KPI card with dynamic accent color"""
     st.markdown(f"""
         <div class="kpi-card" style="border-left-color:{color}">
             <h4>{title}</h4>
             <h2>{value}</h2>
         </div>
     """, unsafe_allow_html=True)
-
 
